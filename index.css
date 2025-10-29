@@ -4,6 +4,15 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
+/* ABBK Brand Colors as CSS Variables */
+:root {
+  --abbk-red: #E63946;
+  --abbk-darkred: #C1121F;
+  --abbk-black: #1A1A1A;
+  --abbk-gray: #6C757D;
+  --abbk-light: #F8F9FA;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -16,7 +25,7 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbar styling */
+/* Scrollbar styling - ABBK themed */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -28,19 +37,21 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: var(--abbk-red);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: var(--abbk-darkred);
 }
 
-/* Custom input focus styles */
+/* Custom input focus styles - ABBK red */
 input:focus,
 textarea:focus,
 select:focus {
   outline: none;
+  border-color: var(--abbk-red);
+  ring-color: var(--abbk-red);
 }
 
 /* Animation utilities */
@@ -55,8 +66,68 @@ select:focus {
   }
 }
 
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in-out;
+}
+
+/* ABBK Custom utility classes */
+@layer utilities {
+  .bg-abbk-red {
+    background-color: var(--abbk-red);
+  }
+  
+  .bg-abbk-darkred {
+    background-color: var(--abbk-darkred);
+  }
+  
+  .bg-abbk-black {
+    background-color: var(--abbk-black);
+  }
+  
+  .text-abbk-red {
+    color: var(--abbk-red);
+  }
+  
+  .text-abbk-darkred {
+    color: var(--abbk-darkred);
+  }
+  
+  .text-abbk-black {
+    color: var(--abbk-black);
+  }
+  
+  .text-abbk-gray {
+    color: var(--abbk-gray);
+  }
+  
+  .border-abbk-red {
+    border-color: var(--abbk-red);
+  }
+  
+  .border-abbk-darkred {
+    border-color: var(--abbk-darkred);
+  }
+  
+  .hover\:bg-abbk-red:hover {
+    background-color: var(--abbk-red);
+  }
+  
+  .hover\:bg-abbk-darkred:hover {
+    background-color: var(--abbk-darkred);
+  }
+  
+  .hover\:text-abbk-red:hover {
+    color: var(--abbk-red);
+  }
 }
 
 /* Print styles for PDF preview */
@@ -69,19 +140,4 @@ select:focus {
   .no-print {
     display: none !important;
   }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
 }

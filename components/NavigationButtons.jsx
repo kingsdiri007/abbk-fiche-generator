@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Download } from 'lucide-react';
 import { useFormContext } from '../context/FormContext';
+import { ABBK_COLORS } from '../utils/theme';
 import { downloadPDF, getPDFBlob } from '../utils/PdfGenerator';
 import { uploadPDFToPack, createFormationPack } from '../services/supabaseService';
 import { validateStep1, validateStep2, validateStep3, validateAllSteps } from '../utils/validation';
@@ -315,60 +316,76 @@ const handleGenerateEvaluationPDF = async () => {
       <ErrorList errors={errors} />
       
       <div className="flex justify-between mt-8">
-        <button
-          onClick={goBack}
-          disabled={currentStep === 1}
-          className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
-        >
-          <ChevronLeft size={20} />
-          Back
-        </button>
+        
+<button
+  onClick={goBack}
+  disabled={currentStep === 1}
+  className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition"
+>
+  <ChevronLeft size={20} />
+  Back
+</button>
 
-        {isStep7 ? (
+{isStep7 ? (
   <button
     onClick={handleGenerateEvaluationPDF}
     disabled={isGenerating}
-    className="flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 transition disabled:opacity-50"
+    className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-md"
+    style={{ 
+      backgroundColor: isGenerating ? ABBK_COLORS.gray : ABBK_COLORS.red,
+    }}
+    onMouseEnter={(e) => !isGenerating && (e.target.style.backgroundColor = ABBK_COLORS.darkred)}
+    onMouseLeave={(e) => !isGenerating && (e.target.style.backgroundColor = ABBK_COLORS.red)}
   >
     <Download size={20} />
     {isGenerating ? 'Completing Pack...' : 'Complete Formation Pack'}
   </button>
-) : isStep6 ? (
-          <button
-            onClick={handleGeneratePresencePDF}
-            disabled={isGenerating}
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-50"
-          >
-            <Download size={20} />
-            {isGenerating ? 'Generating...' : 'Generate Fiche Présence'}
-          </button>
-        ) : isStep5 ? (
-          <button
-            onClick={handleGeneratePlanPDF}
-            disabled={isGenerating}
-            className="flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition disabled:opacity-50"
-          >
-            <Download size={20} />
-            {isGenerating ? 'Generating Plan...' : 'Generate Fiche Plan'}
-          </button>
-        ) : isLastMainStep ? (
-          <button
-            onClick={handleGeneratePDF}
-            disabled={isGenerating}
-            className="flex items-center gap-2 px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition disabled:opacity-50"
-          >
-            <Download size={20} />
-            {isGenerating ? 'Generating...' : 'Download PDF'}
-          </button>
-        ) : (
-          <button
-            onClick={handleNext}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition"
-          >
-            Next
-            <ChevronRight size={20} />
-          </button>
-        )}
+) :isStep6 ? (
+  <button
+    onClick={handleGeneratePresencePDF}
+    disabled={isGenerating}
+    className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-md"
+    style={{ backgroundColor: '#10b981' }}
+  >
+    <Download size={20} />
+    {isGenerating ? 'Generating...' : 'Generate Fiche Présence'}
+  </button>
+) :
+isStep5 ? (
+  <button
+    onClick={handleGeneratePlanPDF}
+    disabled={isGenerating}
+    className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-md"
+    style={{ backgroundColor: '#9333ea' }}
+  >
+    <Download size={20} />
+    {isGenerating ? 'Generating Plan...' : 'Generate Fiche Plan'}
+  </button>
+) :  
+isLastMainStep ? (
+  <button
+    onClick={handleGeneratePDF}
+    disabled={isGenerating}
+    className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-medium transition disabled:opacity-50 shadow-md"
+    style={{ backgroundColor: '#10b981' }}
+  >
+    <Download size={20} />
+    {isGenerating ? 'Generating...' : 'Download PDF'}
+  </button>
+)  :
+(
+  <button
+    onClick={handleNext}
+    className="flex items-center gap-2 px-6 py-3 text-white rounded-lg font-medium transition shadow-md"
+    style={{ backgroundColor: ABBK_COLORS.red }}
+    onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+    onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+  >
+    Next
+    <ChevronRight size={20} />
+  </button>
+)
+}
       </div>
 
       {showPackModal && (
@@ -379,19 +396,23 @@ const handleGenerateEvaluationPDF = async () => {
             </h2>
             
             <div className="space-y-3 mb-6">
-              <button
-                onClick={handleContinueToNext}
-                className="w-full px-6 py-4 bg-purple-600 text-white rounded-lg hover:bg-purple-700 font-semibold"
-              >
-                Continue to {getNextStepName()}
-              </button>
+             
+<button
+  onClick={handleContinueToNext}
+  className="w-full px-6 py-4 text-white rounded-lg font-semibold transition shadow-md"
+  style={{ backgroundColor: ABBK_COLORS.red }}
+  onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+  onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+>
+  Continue to {getNextStepName()}
+</button>
 
-              <button
-                onClick={handleSaveAndFinish}
-                className="w-full px-6 py-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold"
-              >
-                Save & Finish Later
-              </button>
+<button
+  onClick={handleSaveAndFinish}
+  className="w-full px-6 py-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition"
+>
+  Save & Finish Later
+</button>
             </div>
 
             <p className="text-xs text-gray-500 text-center">

@@ -1,5 +1,7 @@
 import React from 'react';
 import { useFormContext } from '../context/FormContext';
+import { ABBK_COLORS } from '../utils/theme';
+
 
 export default function Step4Preview() {
   const { formData } = useFormContext();
@@ -10,10 +12,13 @@ export default function Step4Preview() {
     : "FICHE D'INSTALLATION";
 
   return (
-    <div className="bg-white rounded-xl shadow-2xl max-w-5xl mx-auto border-4 border-gray-300">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
+
       {/* Document Title */}
-      <div className="border-b-2 border-gray-800 p-4 text-center">
-        <h2 className="text-lg font-bold uppercase">{docTitle}</h2>
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
+
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
+{docTitle}</h2>
       </div>
 
       {/* Header Section */}
@@ -68,7 +73,9 @@ export default function Step4Preview() {
               return (
                 <div key={formationIndex} className="border-2 border-purple-300 rounded-lg p-4 bg-purple-50">
                   {/* Formation Header */}
-                  <div className="bg-purple-600 text-white p-3 rounded-lg mb-4 -mx-4 -mt-4">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
+
+
                     <h3 className="text-lg font-bold">{formationData.formationName || 'Formation'}</h3>
                   </div>
 

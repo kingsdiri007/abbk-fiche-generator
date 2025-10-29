@@ -15,6 +15,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { getAllPDFs, deletePDF } from '../services/supabaseService';
 import { useFormContext } from '../context/FormContext';
+import { ABBK_COLORS } from '../utils/theme';
 
 export default function SavedFiches() {
   const navigate = useNavigate();
@@ -120,23 +121,29 @@ export default function SavedFiches() {
 
   return (
     <div className="page container max-w-7xl mx-auto px-6 py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h2 className="text-3xl font-bold text-gray-800">Saved Fiches</h2>
-          <p className="text-gray-600 mt-1">{filteredFiches.length} fiches found</p>
+  <div className="flex items-center justify-between mb-8">
+    <div>
+      <h2 className="text-3xl font-bold text-gray-800 dark:text-white">Saved Fiches</h2>
+      <p className="text-gray-600 dark:text-gray-400 mt-1">{filteredFiches.length} fiches found</p>
+
         </div>
-        <button
-          onClick={loadFiches}
-          disabled={loading}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
-        >
-          <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-          Refresh
-        </button>
+        
+<button
+  onClick={loadFiches}
+  disabled={loading}
+  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition disabled:opacity-50 shadow-md"
+  style={{ backgroundColor: ABBK_COLORS.red }}
+  onMouseEnter={(e) => !loading && (e.target.style.backgroundColor = ABBK_COLORS.darkred)}
+  onMouseLeave={(e) => !loading && (e.target.style.backgroundColor = ABBK_COLORS.red)}
+>
+  <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
+  Refresh
+</button>
       </div>
 
       {/* Search and Filter Bar */}
-      <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 mb-6 transition-colors duration-300">
+
         <div className="flex flex-col md:flex-row gap-4">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -185,13 +192,20 @@ export default function SavedFiches() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredFiches.map((fiche) => (
-            <div key={fiche.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow">
+            <div key={fiche.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-lg hover:shadow-xl transition-all">
+
               {/* Card Header */}
               <div className={`p-4 rounded-t-xl ${
-                fiche.fiche_type === 'formation' 
-                  ? 'bg-purple-500' 
-                  : 'bg-orange-500'
-              }`}>
+  fiche.fiche_type === 'formation' 
+    ? 'text-white'
+    : 'text-white'
+}`}
+style={{ 
+  backgroundColor: fiche.fiche_type === 'formation' 
+    ? ABBK_COLORS.red 
+    : ABBK_COLORS.darkred 
+}}
+>
                 <div className="flex items-center justify-between text-white">
                   <span className="text-sm font-semibold uppercase">
                     {fiche.fiche_type === 'formation' ? '📚 Formation' : '🔧 License'}
@@ -226,23 +240,23 @@ export default function SavedFiches() {
                 </div>
 
                 {/* Formations Info */}
-                {fiche.form_data?.selectedFormations && fiche.form_data.selectedFormations.length > 0 && (
-                  <div className="pt-2 border-t">
-                    <p className="text-xs font-semibold text-gray-600 mb-1">Formations:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {fiche.form_data.selectedFormations.slice(0, 2).map((formId, idx) => (
-                        <span key={idx} className="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
-                          {formId.substring(0, 10)}...
-                        </span>
-                      ))}
-                      {fiche.form_data.selectedFormations.length > 2 && (
-                        <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                          +{fiche.form_data.selectedFormations.length - 2}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                )}
+                
+{fiche.form_data?.selectedFormations && fiche.form_data.selectedFormations.length > 0 && (
+  <div className="pt-2 border-t dark:border-gray-700">
+    <p className="text-xs font-semibold text-gray-600 dark:text-gray-400 mb-1">Formations:</p>
+    <div className="flex flex-wrap gap-1">
+      {fiche.form_data.selectedFormations.slice(0, 2).map((formId, idx) => (
+        <span 
+          key={idx} 
+          className="text-xs text-white px-2 py-1 rounded"
+          style={{ backgroundColor: ABBK_COLORS.red }}
+        >
+          {formId.substring(0, 10)}...
+        </span>
+      ))}
+    </div>
+  </div>
+)}
 
                 {/* Licenses Info */}
                 {fiche.form_data?.licenses && fiche.form_data.licenses[0]?.name && (
@@ -261,31 +275,39 @@ export default function SavedFiches() {
 
               {/* Card Footer - Actions */}
               <div className="p-4 border-t flex gap-2">
-                <button
-                  onClick={() => handleEdit(fiche)}
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm"
-                  title="Edit this fiche"
-                >
-                  <Edit size={16} />
-                  Edit
-                </button>
-                <a
-                  href={fiche.publicUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
-                  title="View PDF"
-                >
-                  <Eye size={16} />
-                </a>
-                <a
-                  href={fiche.publicUrl}
-                  download
-                  className="flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
-                  title="Download PDF"
-                >
-                  <Download size={16} />
-                </a>
+                
+<button
+  onClick={() => handleEdit(fiche)}
+  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 text-white rounded-lg transition text-sm shadow-md"
+  style={{ backgroundColor: ABBK_COLORS.red }}
+  onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+  onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+  title="Edit this fiche"
+>
+  <Edit size={16} />
+  Edit
+</button>
+
+              
+<a
+  href={fiche.publicUrl}
+  target="_blank"
+  rel="noopener noreferrer"
+  className="flex items-center justify-center gap-2 px-3 py-2 text-white rounded-lg transition text-sm shadow-md"
+  style={{ backgroundColor: ABBK_COLORS.black }}
+  title="View PDF"
+>
+  <Eye size={16} />
+</a>
+                
+<a
+  href={fiche.publicUrl}
+  download
+  className="flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm shadow-md"
+  title="Download PDF"
+>
+  <Download size={16} />
+</a>
                 <button
                   onClick={() => handleDelete(fiche.id)}
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"

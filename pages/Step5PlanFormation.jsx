@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useFormContext } from '../context/FormContext';
 import { Plus, Trash2 } from 'lucide-react';
+import { ABBK_COLORS } from '../utils/theme';
 
 export default function Step5PlanFormation() {
   const { formData, updateFormData } = useFormContext();
@@ -116,10 +117,14 @@ export default function Step5PlanFormation() {
   };
 
   return (
-    <div className="max-w-[95%] mx-auto">
-      <div className="bg-white rounded-xl shadow-lg p-8">
-        <div className="bg-purple-500 text-white p-6 rounded-lg mb-8 -mx-8 -mt-8">
-          <h2 className="text-3xl font-bold text-center">FICHE PLAN DE FORMATION</h2>
+  <div className="max-w-[95%] mx-auto">
+  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
+
+        <div 
+  className="text-white p-6 rounded-lg mb-8 -mx-8 -mt-8"
+  style={{ background: `linear-gradient(135deg, ${ABBK_COLORS.red} 0%, ${ABBK_COLORS.darkred} 100%)` }}
+>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">FICHE PLAN DE FORMATION</h2>
           <p className="text-center text-sm mt-2 opacity-90">Step 5 of 7</p>
         </div>
 
@@ -145,10 +150,14 @@ export default function Step5PlanFormation() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-gray-800">Formations Planning</h3>
-            <button
-              onClick={addFormationRow}
-              className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 text-sm font-medium"
-            >
+            
+<button
+ onClick={addFormationRow}
+  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:shadow-md font-medium transition"
+  style={{ backgroundColor: ABBK_COLORS.red }}
+  onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+  onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+>
               <Plus size={18} />
               Add Formation
             </button>
@@ -294,8 +303,8 @@ export default function Step5PlanFormation() {
             value={planData.notes || ''}
             onChange={(e) => updatePlanData({ notes: e.target.value })}
             rows="6"
-            className="w-full px-4 py-3 text-sm border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            placeholder="Enter notes here..."
+             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition"
+  placeholder="Enter notes here..."
           />
         </div>
 
@@ -308,7 +317,7 @@ export default function Step5PlanFormation() {
             type="text"
             value={planData.contactNote}
             onChange={(e) => updatePlanData({ contactNote: e.target.value })}
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+            className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2"
             placeholder="Notre contact à :"
           />
         </div>
@@ -323,8 +332,8 @@ export default function Step5PlanFormation() {
               type="date"
               value={planData.dateSignature}
               onChange={(e) => updatePlanData({ dateSignature: e.target.value })}
-              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-            />
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition"
+  style={{ focusRingColor: ABBK_COLORS.red }} />
             <div className="mt-8 pt-4 border-t-2 border-gray-300">
               <p className="text-sm font-bold text-gray-800 mb-3">Signature</p>
               <div className="h-24 border-2 border-dashed border-gray-400 rounded-lg bg-gray-50"></div>

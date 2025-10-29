@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useFormContext } from '../context/FormContext';
 import { MOCK_INTERVENANTS, generateInterventionNature } from '../utils/mockData';
+import { ABBK_COLORS } from '../utils/theme';
 
 export default function Step3CommonDetails() {
   const { formData, updateFormData } = useFormContext();
@@ -24,15 +25,17 @@ export default function Step3CommonDetails() {
   }, [formData.licenses, formData.clientName, isLicenseMode]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Intervention Details</h2>
+    
+<div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
+
+      <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Intervention Details</h2>
       
       <div className="space-y-6">
         {/* Nature and Observations - ONLY for License mode */}
         {isLicenseMode && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Nature de l'intervention:
                 <span className="text-xs text-gray-500 ml-2">(Auto-generated)</span>
               </label>
@@ -42,8 +45,8 @@ export default function Step3CommonDetails() {
                 onChange={(e) => updateFormData({ interventionNature: e.target.value })}
                 readOnly
                 rows="3"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50"
-              />
+               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition"
+ />
             </div>
 
             <div>
@@ -73,8 +76,9 @@ export default function Step3CommonDetails() {
               placeholder="Reference BC"
               value={formData.referenceBC}
               onChange={(e) => updateFormData({ referenceBC: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition"
+  style={{ focusRingColor: ABBK_COLORS.red }}
+   />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -84,8 +88,9 @@ export default function Step3CommonDetails() {
               type="date"
               value={formData.interventionDate}
               onChange={(e) => updateFormData({ interventionDate: e.target.value })}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition"
+  style={{ focusRingColor: ABBK_COLORS.red }}
+   />
           </div>
         </div>
 
@@ -97,8 +102,8 @@ export default function Step3CommonDetails() {
           <select
             value={formData.intervenant}
             onChange={(e) => updateFormData({ intervenant: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition"
+ >
             <option value="">-- Select Intervenant --</option>
             {MOCK_INTERVENANTS.map((intervenant) => (
               <option key={intervenant} value={intervenant}>
@@ -117,8 +122,9 @@ export default function Step3CommonDetails() {
             placeholder="e.g., Ariana, Tunis"
             value={formData.location}
             onChange={(e) => updateFormData({ location: e.target.value })}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          />
+              className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition"
+  style={{ focusRingColor: ABBK_COLORS.red }}
+   />
         </div>
       </div>
     </div>

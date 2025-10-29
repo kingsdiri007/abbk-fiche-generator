@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useFormContext } from '../context/FormContext';
 import { Plus, Trash2 } from 'lucide-react';
+import { ABBK_COLORS } from '../utils/theme';
 
 export default function Step6Presence() {
   const { formData, updateFormData } = useFormContext();
@@ -115,7 +116,11 @@ export default function Step6Presence() {
   return (
     <div className="max-w-[95%] mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-8">
-        <div className="bg-green-600 text-white p-6 rounded-lg mb-8 -mx-8 -mt-8">
+       
+<div 
+  className="text-white p-6 rounded-lg mb-8 -mx-8 -mt-8"
+  style={{ backgroundColor: ABBK_COLORS.red }}
+>
           <h2 className="text-3xl font-bold text-center">FICHE DE PRÉSENCE</h2>
           <p className="text-center text-sm mt-2 opacity-90">Step 6 of 7</p>
         </div>
@@ -244,10 +249,14 @@ export default function Step6Presence() {
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold">Liste des participants</h3>
-            <button
-              onClick={addParticipant}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-            >
+           
+<button
+ onClick={addParticipant}
+  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:shadow-md font-medium transition"
+  style={{ backgroundColor: ABBK_COLORS.red }}
+  onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+  onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+>
               <Plus size={18} />
               Add Participant
             </button>

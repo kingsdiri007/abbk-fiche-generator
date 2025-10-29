@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useFormContext } from '../context/FormContext';
+import { ABBK_COLORS } from '../utils/theme';
 
 export default function Step7Evaluation() {
   const { formData, updateFormData } = useFormContext();
@@ -123,7 +124,10 @@ export default function Step7Evaluation() {
   return (
     <div className="max-w-[98%] mx-auto">
       <div className="bg-white rounded-xl shadow-lg p-8">
-        <div className="bg-orange-600 text-white p-6 rounded-lg mb-8 -mx-8 -mt-8">
+        <div 
+  className="text-white p-6 rounded-lg mb-8 -mx-8 -mt-8"
+  style={{ backgroundColor: ABBK_COLORS.darkred }}
+>
           <h2 className="text-3xl font-bold text-center">FICHE D'ÉVALUATION</h2>
           <h3 className="text-xl text-center mt-2">DES PARTICIPANTS</h3>
           <p className="text-center text-sm mt-2 opacity-90">Step 7 of 7 - Final Step!</p>

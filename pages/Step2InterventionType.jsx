@@ -3,6 +3,8 @@ import { Plus, Trash2, Edit2, Save, SkipForward, Lock } from 'lucide-react';
 import { useFormContext } from '../context/FormContext';
 import { getAllFormations, saveCustomFormation, checkIfAdmin } from '../services/supabaseService';
 import LicenseTable from '../components/LicenseTable';
+import { ABBK_COLORS } from '../utils/theme';
+
 
 export default function Step2InterventionType() {
   const { formData, updateFormData, showToast } = useFormContext();
@@ -221,17 +223,22 @@ export default function Step2InterventionType() {
     <div className="space-y-6">
       {/* Intervention Type Selection */}
       <div className="grid grid-cols-2 gap-6">
-        <button
-          onClick={() => updateFormData({ interventionType: 'formation' })}
-          className={`p-8 rounded-xl text-center transition-all ${
-            formData.interventionType === 'formation'
-              ? 'bg-purple-600 text-white shadow-lg scale-105'
-              : 'bg-white text-gray-700 hover:bg-gray-50 shadow'
-          }`}
-        >
-          <span className="text-3xl mb-2 block">📚</span>
-          <span className="text-2xl font-semibold">Formation</span>
-        </button>
+    
+<button
+  onClick={() => updateFormData({ interventionType: 'formation' })}
+  className={`p-8 rounded-xl text-center transition-all shadow ${
+    formData.interventionType === 'formation'
+      ? 'text-white scale-105'
+      : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+  }`}
+  style={formData.interventionType === 'formation' ? { 
+    backgroundColor: ABBK_COLORS.red,
+    boxShadow: `0 10px 15px -3px ${ABBK_COLORS.red}40`
+  } : {}}
+>
+  <span className="text-3xl mb-2 block">📚</span>
+  <span className="text-2xl font-semibold">Formation</span>
+</button>
 
         <button
           onClick={() => updateFormData({ interventionType: 'license' })}
