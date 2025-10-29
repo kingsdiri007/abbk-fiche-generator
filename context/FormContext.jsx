@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 import { INITIAL_FORM_DATA } from '../utils/constants';
 
@@ -52,7 +51,7 @@ export const FormProvider = ({ children }) => {
   };
 
   const goNext = () => {
-    if (currentStep < 4) setCurrentStep(currentStep + 1);
+    if (currentStep < 7) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -64,26 +63,26 @@ export const FormProvider = ({ children }) => {
     setCurrentStep(1);
   };
 
- return (
-  <FormContext.Provider
-    value={{
-      formData,
-      setFormData,
-      updateFormData,
-      currentStep,
-      setCurrentStep,
-      goNext,
-      goBack,
-      addLicense,
-      updateLicense,
-      removeLicense,
-      resetForm, // Make sure this is here!
-      toast,
-      showToast,
-      hideToast
-    }}
-  >
-    {children}
-  </FormContext.Provider>
-);
+  return (
+    <FormContext.Provider
+      value={{
+        formData,
+        setFormData, // IMPORTANT: Expose setFormData for edit functionality
+        updateFormData,
+        currentStep,
+        setCurrentStep, // IMPORTANT: Expose setCurrentStep for edit functionality
+        goNext,
+        goBack,
+        addLicense,
+        updateLicense,
+        removeLicense,
+        resetForm,
+        toast,
+        showToast,
+        hideToast
+      }}
+    >
+      {children}
+    </FormContext.Provider>
+  );
 };

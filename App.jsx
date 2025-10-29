@@ -9,11 +9,14 @@ import Home from './pages/Home';
 import SavedFiches from './pages/SavedFiches';
 import Login from './pages/Login';
 import Step5PlanFormation from './pages/Step5PlanFormation';
+import Step6Presence from './pages/Step6Presence';
+import Step7Evaluation from './pages/Step7Evaluation';
 
 import Step1AudienceContact from './pages/Step1AudienceContact';
 import Step2InterventionType from './pages/Step2InterventionType';
 import Step3CommonDetails from './pages/Step3CommonDetails';
 import Step4Preview from './pages/Step4Preview';
+
 function CreateFiche() {
   const { currentStep } = useFormContext();
 
@@ -26,6 +29,8 @@ function CreateFiche() {
         {currentStep === 3 && <Step3CommonDetails />}
         {currentStep === 4 && <Step4Preview />}
         {currentStep === 5 && <Step5PlanFormation />}
+        {currentStep === 6 && <Step6Presence />}
+        {currentStep === 7 && <Step7Evaluation />}
 
         <NavigationButtons totalSteps={4} />
       </main>

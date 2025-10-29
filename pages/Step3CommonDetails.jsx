@@ -1,46 +1,67 @@
-
 import React, { useEffect } from 'react';
 import { useFormContext } from '../context/FormContext';
 import { MOCK_INTERVENANTS, generateInterventionNature } from '../utils/mockData';
 
 export default function Step3CommonDetails() {
   const { formData, updateFormData } = useFormContext();
+  const isLicenseMode = formData.interventionType === 'license';
 
-  // Auto-fill nature and observations for license mode
+  // Auto-fill nature and observations ONLY for license mode
   useEffect(() => {
-    if (formData.interventionType === 'license' && formData.licenses && formData.clientName) {
+    if (isLicenseMode && formData.licenses && formData.clientName) {
       const natureText = generateInterventionNature(formData.licenses, formData.clientName);
       updateFormData({
         interventionNature: natureText,
         observations: natureText
       });
+    } else if (!isLicenseMode) {
+      // Clear nature and observations for formation mode
+      updateFormData({
+        interventionNature: '',
+        observations: ''
+      });
     }
-  }, [formData.licenses, formData.clientName, formData.interventionType]);
+  }, [formData.licenses, formData.clientName, isLicenseMode]);
 
   return (
     <div className="bg-white rounded-xl shadow-lg p-8 max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Intervention Details</h2>
       
       <div className="space-y-6">
-        {/* Nature (Auto-filled for license, editable for formation) */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Nature de l'intervention:
-            {formData.interventionType === 'license' && (
-              <span className="text-xs text-gray-500 ml-2">(Auto-generated)</span>
-            )}
-          </label>
-          <textarea
-            placeholder="Describe the intervention"
-            value={formData.interventionNature}
-            onChange={(e) => updateFormData({ interventionNature: e.target.value })}
-            readOnly={formData.interventionType === 'license'}
-            rows="3"
-            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${
-              formData.interventionType === 'license' ? 'bg-gray-50' : ''
-            }`}
-          />
-        </div>
+        {/* Nature and Observations - ONLY for License mode */}
+        {isLicenseMode && (
+          <>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Nature de l'intervention:
+                <span className="text-xs text-gray-500 ml-2">(Auto-generated)</span>
+              </label>
+              <textarea
+                placeholder="Describe the intervention"
+                value={formData.interventionNature}
+                onChange={(e) => updateFormData({ interventionNature: e.target.value })}
+                readOnly
+                rows="3"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Observations:
+                <span className="text-xs text-gray-500 ml-2">(Auto-generated)</span>
+              </label>
+              <textarea
+                placeholder="Additional notes or observations"
+                value={formData.observations}
+                onChange={(e) => updateFormData({ observations: e.target.value })}
+                readOnly
+                rows="4"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 bg-gray-50"
+              />
+            </div>
+          </>
+        )}
 
         <div className="grid grid-cols-2 gap-4">
           <div>
@@ -85,26 +106,6 @@ export default function Step3CommonDetails() {
               </option>
             ))}
           </select>
-        </div>
-
-        {/* Observations (Auto-filled for license) */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Observations:
-            {formData.interventionType === 'license' && (
-              <span className="text-xs text-gray-500 ml-2">(Auto-generated)</span>
-            )}
-          </label>
-          <textarea
-            placeholder="Additional notes or observations"
-            value={formData.observations}
-            onChange={(e) => updateFormData({ observations: e.target.value })}
-            readOnly={formData.interventionType === 'license'}
-            rows="4"
-            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 ${
-              formData.interventionType === 'license' ? 'bg-gray-50' : ''
-            }`}
-          />
         </div>
 
         <div>

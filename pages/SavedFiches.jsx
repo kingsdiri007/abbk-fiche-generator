@@ -9,23 +9,26 @@ import {
   User,
   Briefcase,
   Eye,
-  RefreshCw
+  RefreshCw,
+  Edit
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { getAllPDFs, deletePDF } from '../services/supabaseService';
+import { useFormContext } from '../context/FormContext';
 
 export default function SavedFiches() {
+  const navigate = useNavigate();
+  const { setFormData, setCurrentStep } = useFormContext();
   const [fiches, setFiches] = useState([]);
   const [filteredFiches, setFilteredFiches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterType, setFilterType] = useState('all'); // all, formation, license
+  const [filterType, setFilterType] = useState('all');
 
-  // Load fiches on mount
   useEffect(() => {
     loadFiches();
   }, []);
 
-  // Apply filters when search or filter changes
   useEffect(() => {
     applyFilters();
   }, [searchTerm, filterType, fiches]);
@@ -46,12 +49,10 @@ export default function SavedFiches() {
   const applyFilters = () => {
     let filtered = [...fiches];
 
-    // Apply type filter
     if (filterType !== 'all') {
       filtered = filtered.filter(f => f.fiche_type === filterType);
     }
 
-    // Apply search filter
     if (searchTerm) {
       filtered = filtered.filter(f => {
         const clientName = f.clients?.name?.toLowerCase() || '';
@@ -76,11 +77,34 @@ export default function SavedFiches() {
     try {
       await deletePDF(ficheId);
       alert('✅ Fiche deleted successfully!');
-      loadFiches(); // Reload list
+      loadFiches();
     } catch (error) {
       console.error('Error deleting:', error);
       alert('❌ Error deleting: ' + error.message);
     }
+  };
+
+  const handleEdit = (fiche) => {
+    // Load the fiche data into the form context
+    if (!fiche.form_data) {
+      alert('⚠️ This fiche does not have editable data');
+      return;
+    }
+
+    // Set the form data from the saved fiche
+    setFormData(fiche.form_data);
+    
+    // Determine which step to start at
+    if (fiche.fiche_type === 'formation') {
+      // For formation, start at step 1 with all data pre-filled
+      setCurrentStep(1);
+    } else {
+      // For license, start at step 1
+      setCurrentStep(1);
+    }
+
+    // Navigate to create page
+    navigate('/create');
   };
 
   const formatDate = (dateString) => {
@@ -96,7 +120,6 @@ export default function SavedFiches() {
 
   return (
     <div className="page container max-w-7xl mx-auto px-6 py-8">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h2 className="text-3xl font-bold text-gray-800">Saved Fiches</h2>
@@ -115,7 +138,6 @@ export default function SavedFiches() {
       {/* Search and Filter Bar */}
       <div className="bg-white rounded-xl shadow-lg p-4 mb-6">
         <div className="flex flex-col md:flex-row gap-4">
-          {/* Search */}
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
@@ -127,7 +149,6 @@ export default function SavedFiches() {
             />
           </div>
 
-          {/* Filter */}
           <div className="flex items-center gap-2">
             <Filter size={20} className="text-gray-400" />
             <select
@@ -183,7 +204,6 @@ export default function SavedFiches() {
 
               {/* Card Body */}
               <div className="p-4 space-y-3">
-                {/* Client Info */}
                 <div className="space-y-2 text-sm text-gray-600">
                   <div className="flex items-center gap-2">
                     <User size={16} className="text-gray-400" />
@@ -205,7 +225,7 @@ export default function SavedFiches() {
                   </div>
                 </div>
 
-                {/* Formations Info (if available) */}
+                {/* Formations Info */}
                 {fiche.form_data?.selectedFormations && fiche.form_data.selectedFormations.length > 0 && (
                   <div className="pt-2 border-t">
                     <p className="text-xs font-semibold text-gray-600 mb-1">Formations:</p>
@@ -224,7 +244,7 @@ export default function SavedFiches() {
                   </div>
                 )}
 
-                {/* Licenses Info (if available) */}
+                {/* Licenses Info */}
                 {fiche.form_data?.licenses && fiche.form_data.licenses[0]?.name && (
                   <div className="pt-2 border-t">
                     <p className="text-xs font-semibold text-gray-600 mb-1">Licenses:</p>
@@ -241,25 +261,35 @@ export default function SavedFiches() {
 
               {/* Card Footer - Actions */}
               <div className="p-4 border-t flex gap-2">
+                <button
+                  onClick={() => handleEdit(fiche)}
+                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition text-sm"
+                  title="Edit this fiche"
+                >
+                  <Edit size={16} />
+                  Edit
+                </button>
                 <a
                   href={fiche.publicUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm"
+                  title="View PDF"
                 >
                   <Eye size={16} />
-                  View
                 </a>
                 <a
                   href={fiche.publicUrl}
                   download
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition text-sm"
+                  title="Download PDF"
                 >
                   <Download size={16} />
                 </a>
                 <button
                   onClick={() => handleDelete(fiche.id)}
                   className="flex items-center justify-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition text-sm"
+                  title="Delete fiche"
                 >
                   <Trash2 size={16} />
                 </button>
