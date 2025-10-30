@@ -10,7 +10,7 @@ export default function Step6Presence() {
   useEffect(() => {
     if (!formData.presenceData) {
       const planFormation = formData.planData?.formations?.[0] || {};
-      const nombreJours = parseInt(planFormation.nombreJours || '2');
+      const nombreJours = Math.min(parseInt(planFormation.nombreJours || '2'), 7); // Max 7 days
       
       updateFormData({
         presenceData: {
@@ -20,7 +20,7 @@ export default function Step6Presence() {
           periodeFin: planFormation.dateFin || '',
           cadreFormation: '',
           formateur: planFormation.formateur || formData.intervenant || '',
-          nombreJours: planFormation.nombreJours || '2',
+          nombreJours: nombreJours.toString(),
           dureeFormation: planFormation.dureeFormation || '',
           modeFormation: 'Présentielle',
           lieuFormation: planFormation.lieuFormation || formData.location || '',
@@ -44,7 +44,7 @@ export default function Step6Presence() {
     periodeFin: '',
     cadreFormation: '',
     formateur: '',
-    nombreJours: '',
+    nombreJours: '2',
     dureeFormation: '',
     modeFormation: 'Présentielle',
     lieuFormation: '',
@@ -64,6 +64,20 @@ export default function Step6Presence() {
         ...presenceData,
         ...updates
       }
+    });
+  };
+
+  // Update participants array when number of days changes
+  const handleNombreJoursChange = (newNombreJours) => {
+    const numDays = Math.min(Math.max(parseInt(newNombreJours) || 2, 1), 7); // Min 1, Max 7
+    const updatedParticipants = presenceData.participants.map(p => ({
+      ...p,
+      jours: Array(numDays).fill('').map((_, i) => p.jours[i] || '')
+    }));
+    
+    updatePresenceData({
+      nombreJours: numDays.toString(),
+      participants: updatedParticipants
     });
   };
 
@@ -112,135 +126,137 @@ export default function Step6Presence() {
   };
 
   const dates = getDates();
+  const nombreJours = parseInt(presenceData.nombreJours) || 2;
 
   return (
     <div className="max-w-[95%] mx-auto">
-      <div className="bg-white rounded-xl shadow-lg p-8">
-       
-<div 
-  className="text-white p-6 rounded-lg mb-8 -mx-8 -mt-8"
-  style={{ backgroundColor: ABBK_COLORS.red }}
->
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
+        <div 
+          className="text-white p-6 rounded-lg mb-8 -mx-8 -mt-8"
+          style={{ backgroundColor: ABBK_COLORS.red }}
+        >
           <h2 className="text-3xl font-bold text-center">FICHE DE PRÉSENCE</h2>
           <p className="text-center text-sm mt-2 opacity-90">Step 6 of 7</p>
         </div>
 
         {/* Header Info */}
-        <div className="grid grid-cols-2 gap-4 mb-6 p-4 border-2 border-gray-800">
+        <div className="grid grid-cols-2 gap-4 mb-6 p-4 border-2 border-gray-800 dark:border-gray-600">
           <div>
-            <label className="text-sm font-bold">Entreprise :</label>
+            <label className="text-sm font-bold text-gray-900 dark:text-white">Entreprise :</label>
             <input
               type="text"
               value={presenceData.entreprise}
               onChange={(e) => updatePresenceData({ entreprise: e.target.value })}
-              className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg mt-1"
+              className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg mt-1 transition-colors duration-300"
             />
           </div>
         </div>
 
         {/* Formation Details Grid */}
-        <div className="grid grid-cols-3 gap-4 mb-6 text-sm border-2 border-gray-800 p-4">
+        <div className="grid grid-cols-3 gap-4 mb-6 text-sm border-2 border-gray-800 dark:border-gray-600 p-4">
           <div>
-            <label className="font-bold">Thème de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">Thème de formation :</label>
             <input
               type="text"
               value={presenceData.themeFormation}
               onChange={(e) => updatePresenceData({ themeFormation: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded mt-1"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded mt-1 transition-colors duration-300"
             />
           </div>
           <div>
-            <label className="font-bold">Période de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">Période de formation :</label>
             <div className="flex gap-2 mt-1">
               <input
                 type="date"
                 value={presenceData.periodeDebut}
                 onChange={(e) => updatePresenceData({ periodeDebut: e.target.value })}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
               />
-              <span className="self-center">à</span>
+              <span className="self-center text-gray-900 dark:text-white">à</span>
               <input
                 type="date"
                 value={presenceData.periodeFin}
                 onChange={(e) => updatePresenceData({ periodeFin: e.target.value })}
-                className="flex-1 px-3 py-2 border border-gray-300 rounded"
+                className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
               />
             </div>
           </div>
           <div>
-            <label className="font-bold">Heure de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">Heure de formation :</label>
             <div className="flex gap-2 mt-1">
               <input
                 type="text"
                 value={presenceData.heureDebut}
                 onChange={(e) => updatePresenceData({ heureDebut: e.target.value })}
-                className="w-20 px-2 py-2 border border-gray-300 rounded text-center"
+                className="w-20 px-2 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
                 placeholder="9h"
               />
-              <span className="self-center">à</span>
+              <span className="self-center text-gray-900 dark:text-white">à</span>
               <input
                 type="text"
                 value={presenceData.heureFin}
                 onChange={(e) => updatePresenceData({ heureFin: e.target.value })}
-                className="w-20 px-2 py-2 border border-gray-300 rounded text-center"
+                className="w-20 px-2 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
                 placeholder="17h"
               />
             </div>
           </div>
 
           <div>
-            <label className="font-bold">Cadre de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">Cadre de formation :</label>
             <input
               type="text"
               value={presenceData.cadreFormation}
               onChange={(e) => updatePresenceData({ cadreFormation: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded mt-1"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded mt-1 transition-colors duration-300"
             />
           </div>
           <div>
-            <label className="font-bold">Nombre de jours de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">Nombre de jours de formation (max 7) :</label>
             <input
-              type="text"
+              type="number"
+              min="1"
+              max="7"
               value={presenceData.nombreJours}
-              onChange={(e) => updatePresenceData({ nombreJours: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded mt-1"
+              onChange={(e) => handleNombreJoursChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded mt-1 transition-colors duration-300"
             />
           </div>
           <div>
-            <label className="font-bold">Lieu de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">Lieu de formation :</label>
             <input
               type="text"
               value={presenceData.lieuFormation}
               onChange={(e) => updatePresenceData({ lieuFormation: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded mt-1"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded mt-1 transition-colors duration-300"
             />
           </div>
 
           <div>
-            <label className="font-bold">Formateur :</label>
+            <label className="font-bold text-gray-900 dark:text-white">Formateur :</label>
             <input
               type="text"
               value={presenceData.formateur}
               onChange={(e) => updatePresenceData({ formateur: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded mt-1"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded mt-1 transition-colors duration-300"
             />
           </div>
           <div>
-            <label className="font-bold">Durée de la formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">Durée de la formation :</label>
             <input
               type="text"
               value={presenceData.dureeFormation}
               onChange={(e) => updatePresenceData({ dureeFormation: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded mt-1"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded mt-1 transition-colors duration-300"
             />
           </div>
           <div>
-            <label className="font-bold">Mode de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">Mode de formation :</label>
             <input
               type="text"
               value={presenceData.modeFormation}
               onChange={(e) => updatePresenceData({ modeFormation: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded mt-1"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded mt-1 transition-colors duration-300"
             />
           </div>
         </div>
@@ -248,97 +264,96 @@ export default function Step6Presence() {
         {/* Participants Table */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold">Liste des participants</h3>
-           
-<button
- onClick={addParticipant}
-  className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:shadow-md font-medium transition"
-  style={{ backgroundColor: ABBK_COLORS.red }}
-  onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
-  onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
->
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Liste des participants</h3>
+            <button
+              onClick={addParticipant}
+              className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:shadow-md font-medium transition"
+              style={{ backgroundColor: ABBK_COLORS.red }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+              onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+            >
               <Plus size={18} />
               Add Participant
             </button>
           </div>
 
-          <div className="overflow-x-auto border-2 border-gray-800 rounded-lg">
+          <div className="overflow-x-auto border-2 border-gray-800 dark:border-gray-600 rounded-lg">
             <table className="w-full text-sm border-collapse">
               <thead>
-                <tr className="bg-gray-200 border-b-2 border-gray-800">
-                  <th className="border-r-2 border-gray-800 p-3 text-left font-bold min-w-[200px]">
+                <tr className="bg-gray-200 dark:bg-gray-700 border-b-2 border-gray-800 dark:border-gray-600">
+                  <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-left font-bold min-w-[200px] text-gray-900 dark:text-white">
                     Nom et Prénom
                   </th>
-                  <th className="border-r-2 border-gray-800 p-3 text-left font-bold min-w-[200px]">
+                  <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-left font-bold min-w-[200px] text-gray-900 dark:text-white">
                     Établissement / Entreprise
                   </th>
-                  <th className="border-r-2 border-gray-800 p-3 text-center font-bold" colSpan={dates.length}>
+                  <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-center font-bold text-gray-900 dark:text-white" colSpan={nombreJours}>
                     Jours
                   </th>
-                  <th className="border-r-2 border-gray-800 p-3 text-left font-bold min-w-[150px]">
+                  <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-left font-bold min-w-[150px] text-gray-900 dark:text-white">
                     Détails
                   </th>
                   <th className="p-3 w-16"></th>
                 </tr>
                 {dates.length > 0 && (
-                  <tr className="bg-gray-100 border-b-2 border-gray-800">
-                    <th className="border-r-2 border-gray-800"></th>
-                    <th className="border-r-2 border-gray-800"></th>
+                  <tr className="bg-gray-100 dark:bg-gray-600 border-b-2 border-gray-800 dark:border-gray-600">
+                    <th className="border-r-2 border-gray-800 dark:border-gray-600"></th>
+                    <th className="border-r-2 border-gray-800 dark:border-gray-600"></th>
                     {dates.map((date, idx) => (
-                      <th key={idx} className="border-r-2 border-gray-800 p-2 text-center font-bold text-xs">
+                      <th key={idx} className="border-r-2 border-gray-800 dark:border-gray-600 p-2 text-center font-bold text-xs text-gray-900 dark:text-white">
                         {date}
                       </th>
                     ))}
-                    <th className="border-r-2 border-gray-800"></th>
+                    <th className="border-r-2 border-gray-800 dark:border-gray-600"></th>
                     <th></th>
                   </tr>
                 )}
               </thead>
               <tbody>
                 {presenceData.participants.map((participant, pIndex) => (
-                  <tr key={pIndex} className="border-b-2 border-gray-800">
-                    <td className="border-r-2 border-gray-800 p-3">
+                  <tr key={pIndex} className="border-b-2 border-gray-800 dark:border-gray-600">
+                    <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
                       <input
                         type="text"
                         value={participant.nom}
                         onChange={(e) => updateParticipant(pIndex, 'nom', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-gray-300 rounded"
+                        className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
                         placeholder="Name"
                       />
                     </td>
-                    <td className="border-r-2 border-gray-800 p-3">
+                    <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
                       <input
                         type="text"
                         value={participant.etablissement}
                         onChange={(e) => updateParticipant(pIndex, 'etablissement', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-gray-300 rounded"
+                        className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
                         placeholder="Company"
                       />
                     </td>
-                    {dates.map((date, jIndex) => (
-                      <td key={jIndex} className="border-r-2 border-gray-800 p-2">
+                    {Array.from({ length: nombreJours }).map((_, jIndex) => (
+                      <td key={jIndex} className="border-r-2 border-gray-800 dark:border-gray-600 p-2">
                         <input
                           type="text"
                           value={participant.jours[jIndex] || ''}
                           onChange={(e) => updateParticipantJour(pIndex, jIndex, e.target.value)}
-                          className="w-full px-2 py-2 border border-gray-300 rounded text-center"
+                          className="w-full px-2 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
                           placeholder="✓"
                         />
                       </td>
                     ))}
-                    <td className="border-r-2 border-gray-800 p-3">
+                    <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
                       <input
                         type="text"
                         value={participant.details}
                         onChange={(e) => updateParticipant(pIndex, 'details', e.target.value)}
-                        className="w-full px-3 py-2 border-2 border-gray-300 rounded"
+                        className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
                       />
                     </td>
                     <td className="p-3">
                       {presenceData.participants.length > 1 && (
                         <button
                           onClick={() => removeParticipant(pIndex)}
-                          className="p-2 text-red-600 hover:bg-red-50 rounded"
+                          className="p-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded transition"
                         >
                           <Trash2 size={18} />
                         </button>
@@ -346,14 +361,14 @@ export default function Step6Presence() {
                     </td>
                   </tr>
                 ))}
-                <tr className="bg-gray-100 border-b-2 border-gray-800">
-                  <td className="border-r-2 border-gray-800 p-3 font-bold text-center" colSpan="2">
-                    Formateur
+                <tr className="bg-gray-100 dark:bg-gray-700 border-b-2 border-gray-800 dark:border-gray-600">
+                  <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3 font-bold text-gray-900 dark:text-white" colSpan="2">
+                    Formateur: {presenceData.formateur}
                   </td>
-                  {dates.map((date, idx) => (
-                    <td key={idx} className="border-r-2 border-gray-800 p-2"></td>
+                  {Array.from({ length: nombreJours }).map((_, idx) => (
+                    <td key={idx} className="border-r-2 border-gray-800 dark:border-gray-600 p-2"></td>
                   ))}
-                  <td className="border-r-2 border-gray-800 p-3"></td>
+                  <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3"></td>
                   <td></td>
                 </tr>
               </tbody>
@@ -363,36 +378,36 @@ export default function Step6Presence() {
 
         {/* Notes */}
         <div className="mb-6">
-          <h3 className="text-lg font-bold mb-3">Note :</h3>
+          <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Note :</h3>
           <textarea
             value={presenceData.notes}
             onChange={(e) => updatePresenceData({ notes: e.target.value })}
             rows="4"
-            className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg"
+            className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg transition-colors duration-300"
           />
         </div>
 
         {/* Signatures */}
         <div className="grid grid-cols-2 gap-8 border-t-2 pt-6">
           <div>
-            <label className="font-bold mb-2 block">Date Le :</label>
+            <label className="font-bold mb-2 block text-gray-900 dark:text-white">Date Le :</label>
             <input
               type="date"
               value={presenceData.dateLe}
               onChange={(e) => updatePresenceData({ dateLe: e.target.value })}
-              className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg mb-4"
+              className="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg mb-4 transition-colors duration-300"
             />
-            <p className="font-bold mb-3">Signature</p>
-            <div className="h-24 border-2 border-dashed border-gray-400 rounded-lg"></div>
+            <p className="font-bold mb-3 text-gray-900 dark:text-white">Signature</p>
+            <div className="h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg"></div>
           </div>
           <div>
-            <p className="font-bold mb-3 mt-10">Signature de Formateur</p>
-            <div className="h-24 border-2 border-dashed border-gray-400 rounded-lg"></div>
+            <p className="font-bold mb-3 mt-10 text-gray-900 dark:text-white">Signature de Formateur</p>
+            <div className="h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg"></div>
           </div>
         </div>
 
         <div className="text-center mt-6">
-          <p className="text-sm font-bold">Signature ABBK PHYSICSWORKS</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-white">Signature ABBK PHYSICSWORKS</p>
         </div>
       </div>
     </div>

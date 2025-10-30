@@ -30,25 +30,21 @@ function createEvaluationPDF(formData) {
   const evaluationData = formData.evaluationData || {};
   const evaluations = evaluationData.evaluations || [];
 
-  const redRgb = hexToRgb(ABBK_COLORS.red);
-  const darkRedRgb = hexToRgb(ABBK_COLORS.darkred);
   const blackRgb = hexToRgb(ABBK_COLORS.black);
 
-  // Title with ABBK Dark Red
+  // Title - BLACK
   doc.setFontSize(16);
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(darkRedRgb.r, darkRedRgb.g, darkRedRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text("FICHE D'ÉVALUATION", pageWidth / 2, y, { align: 'center' });
   y += 18;
   doc.text('DES PARTICIPANTS', pageWidth / 2, y, { align: 'center' });
   y += 30;
-  doc.setTextColor(0, 0, 0);
 
-  // Header with logo and ABBK Red border
+  // Header with logo - BLACK border
   doc.setLineWidth(2);
-  doc.setDrawColor(darkRedRgb.r, darkRedRgb.g, darkRedRgb.b);
+  doc.setDrawColor(0, 0, 0); // Black border
   doc.rect(margin, y, pageWidth - 2 * margin, 60);
-  doc.setDrawColor(0, 0, 0);
   
   // Add logo
   try {
@@ -59,54 +55,45 @@ function createEvaluationPDF(formData) {
   }
   
   doc.setFontSize(14);
-  doc.setTextColor(darkRedRgb.r, darkRedRgb.g, darkRedRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text('ABBK PHYSICSWORKS', margin + 100, y + 35);
-  doc.setTextColor(0, 0, 0);
   
   y += 70;
 
-  // Formation details with ABBK Red borders
+  // Formation details - BLACK borders
   doc.setLineWidth(1);
   const detailsHeight = 50;
-  doc.setDrawColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setDrawColor(0, 0, 0); // Black border
   doc.rect(margin, y, pageWidth - 2 * margin, detailsHeight);
-  doc.setDrawColor(0, 0, 0);
   
   const detailsY = y;
   const colWidth = (pageWidth - 2 * margin) / 2;
   
   doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   
   // Row 1
   let rowY = detailsY + 15;
   doc.text(`Thème de formation : `, margin + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(`${evaluationData.themeFormation || ''}`, margin + 95, rowY);
   
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text(`Période de formation : `, margin + colWidth + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(`${evaluationData.periodeDebut || ''} à ${evaluationData.periodeFin || ''}`, margin + colWidth + 105, rowY);
   
   // Row 2
   rowY += 20;
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text(`Durée de la formation : `, margin + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(`${evaluationData.dureeFormation || ''}`, margin + 105, rowY);
   
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text(`Formateur : `, margin + colWidth + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(`${evaluationData.formateur || ''}`, margin + colWidth + 60, rowY);
   
   // Grid lines
@@ -120,14 +107,14 @@ function createEvaluationPDF(formData) {
   const firstColWidth = 180;
   const participantColWidth = (pageWidth - 2 * margin - firstColWidth) / evaluations.length;
   
-  // Table header with ABBK Red
-  doc.setFillColor(redRgb.r, redRgb.g, redRgb.b);
+  // Table header - GRAY background
+  doc.setFillColor(220, 220, 220); // Gray
   doc.rect(margin, tableStartY, pageWidth - 2 * margin, 20, 'F');
   doc.rect(margin, tableStartY, pageWidth - 2 * margin, 20, 'S');
   
   doc.setFontSize(8);
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(0, 0, 0); // Black text
   
   // First column empty
   doc.rect(margin, tableStartY, firstColWidth, 20, 'S');
@@ -194,13 +181,12 @@ function createEvaluationPDF(formData) {
   doc.setFontSize(7);
 
   sections.forEach(section => {
-    // Section header with ABBK Red
-    doc.setFillColor(redRgb.r, redRgb.g, redRgb.b);
+    // Section header - GRAY background
+    doc.setFillColor(200, 200, 200); // Darker gray for section headers
     doc.rect(margin, y, pageWidth - 2 * margin, 18, 'FD');
     doc.setFont(undefined, 'bold');
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(0, 0, 0); // Black text
     doc.text(section.title, margin + 5, y + 12);
-    doc.setTextColor(0, 0, 0);
     
     doc.line(margin + firstColWidth, y, margin + firstColWidth, y + 18);
     
@@ -237,7 +223,7 @@ function createEvaluationPDF(formData) {
   doc.setFillColor(34, 197, 94); // Green
   doc.rect(margin, y, pageWidth - 2 * margin, 20, 'FD');
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(255, 255, 255); // White text on green
   doc.text('Note Général', margin + 5, y + 13);
   
   colX = margin + firstColWidth;
@@ -264,10 +250,9 @@ function createEvaluationPDF(formData) {
   
   doc.setFont(undefined, 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text('Note :', margin, y);
   y += 15;
-  doc.setTextColor(0, 0, 0);
   
   doc.setFont(undefined, 'normal');
   doc.setFontSize(8);
@@ -282,16 +267,15 @@ function createEvaluationPDF(formData) {
 
   // Signatures
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(blackRgb.r, blackRgb.g, blackRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text(`Date Le : ${evaluationData.dateLe || ''}`, margin, y);
   
   y += 20;
   
   doc.text('Signature de Formateur', margin, y);
   doc.text('Signature ABBK PHYSICSWORKS', pageWidth - margin - 180, y);
-  doc.setTextColor(0, 0, 0);
 
-  // Footer with ABBK Black
+  // Footer - BLACK
   doc.setFillColor(blackRgb.r, blackRgb.g, blackRgb.b);
   doc.rect(10, pageHeight - 30, pageWidth - 20, 20, 'F');
   doc.setTextColor(255, 255, 255);

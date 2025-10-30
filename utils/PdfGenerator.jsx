@@ -27,22 +27,20 @@ export function generatePDF(formData) {
   const blackRgb = hexToRgb(ABBK_COLORS.black);
   const grayRgb = hexToRgb(ABBK_COLORS.gray);
 
-  // Title at the top with ABBK Red
+  // Title at the top - NOW BLACK
   doc.setFontSize(14);
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setTextColor(0, 0, 0); // Black instead of red
   const docTitle = isFormation 
     ? "FICHE PROGRAMME D'UNE ACTION DE FORMATION"
     : "FICHE D'INSTALLATION";
   doc.text(docTitle, pageWidth / 2, y, { align: 'center' });
-  doc.setTextColor(0, 0, 0); // Reset to black
   y += 25;
 
-  // Draw border around the page with ABBK Red
+  // Draw border around the page - NOW BLACK
   doc.setLineWidth(1.5);
-  doc.setDrawColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setDrawColor(0, 0, 0); // Black border
   doc.rect(10, 10, pageWidth - 20, pageHeight - 80);
-  doc.setDrawColor(0, 0, 0); // Reset to black
 
   // ===== HEADER SECTION WITH LOGO =====
   y = 50;
@@ -59,23 +57,23 @@ export function generatePDF(formData) {
     console.warn('Logo not found, using text fallback');
     doc.setFontSize(18);
     doc.setFont(undefined, 'bold');
-    doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
+    doc.setTextColor(redRgb.r, redRgb.g, redRgb.b); // Logo text stays red
     doc.text('ABBK', logoX, logoY + 30);
     doc.setFontSize(12);
     doc.text('PhysicsWorks', logoX, logoY + 50);
     doc.setTextColor(0, 0, 0);
   }
 
-  // Company details below logo
+  // Company details below logo - BLACK
   y = logoY + logoHeight + 15;
   doc.setFontSize(9);
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(blackRgb.r, blackRgb.g, blackRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text('ABBK PhysicsWorks', logoX, y);
   y += 12;
   
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(grayRgb.r, grayRgb.g, grayRgb.b);
+  doc.setTextColor(grayRgb.r, grayRgb.g, grayRgb.b); // Gray for address
   doc.text('Adresse: Cyberparc Régional, 3200, Tataouine, Tunisie.', logoX, y);
   y += 12;
   doc.text('Branche: 4ème Étage Pépinière de Technopôle El', logoX, y);
@@ -84,19 +82,19 @@ export function generatePDF(formData) {
   y += 10;
   doc.setTextColor(0, 0, 0);
 
-  // Right side - Client information box with ABBK Red border
+  // Right side - Client information box - BLACK BORDER
   const rightBoxX = pageWidth - margin - 250;
   const rightBoxY = logoY;
   const boxWidth = 250;
   const boxHeight = 110;
 
   doc.setLineWidth(2);
-  doc.setDrawColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setDrawColor(0, 0, 0); // Black border
   doc.rect(rightBoxX, rightBoxY, boxWidth, boxHeight);
-  doc.setDrawColor(0, 0, 0);
 
   doc.setFontSize(10);
   doc.setFont(undefined, 'normal');
+  doc.setTextColor(0, 0, 0); // Black text
   let boxY = rightBoxY + 20;
   
   doc.text(`Client: ${formData.clientName || ''}`, rightBoxX + 10, boxY);
@@ -113,12 +111,11 @@ export function generatePDF(formData) {
   boxY += 20;
   doc.text(`ID: ${formData.id || ''}`, rightBoxX + 10, boxY);
 
-  // Horizontal line after header with ABBK Red
+  // Horizontal line after header - BLACK
   y += 10;
   doc.setLineWidth(2);
-  doc.setDrawColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setDrawColor(0, 0, 0); // Black line
   doc.line(margin, y, pageWidth - margin, y);
-  doc.setDrawColor(0, 0, 0);
   y += 20;
 
   // ===== FORMATION MODE: Multiple Formations =====
@@ -131,44 +128,43 @@ export function generatePDF(formData) {
         y = margin;
       }
 
-      // Formation Header with ABBK Red background
-      doc.setFillColor(redRgb.r, redRgb.g, redRgb.b);
+      // Formation Header - GRAY background with BLACK text
+      doc.setFillColor(240, 240, 240); // Light gray background
       doc.rect(margin, y, pageWidth - 2 * margin, 30, 'F');
-      doc.setTextColor(255, 255, 255);
+      doc.setDrawColor(0, 0, 0);
+      doc.rect(margin, y, pageWidth - 2 * margin, 30, 'S');
+      doc.setTextColor(0, 0, 0); // Black text
       doc.setFontSize(14);
       doc.setFont(undefined, 'bold');
       doc.text(formationData.formationName || 'Formation', margin + 10, y + 20);
-      doc.setTextColor(0, 0, 0);
       y += 40;
 
-      // Formation Name and Reference
+      // Formation Name and Reference - BLACK
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
-      doc.setTextColor(blackRgb.r, blackRgb.g, blackRgb.b);
+      doc.setTextColor(0, 0, 0);
       doc.text(`Nom de formation: ${formationData.formationName || ''}`, margin, y);
       y += 15;
       
       doc.text(`Référence: ${formationData.formationRef || ''}`, margin, y);
       y += 20;
-      doc.setTextColor(0, 0, 0);
 
       // Prerequisites, Objectives, Competencies Table
       const detailsTableY = y;
       const colWidth = (pageWidth - 2 * margin) / 3;
       
       doc.setLineWidth(1);
-      doc.setFillColor(240, 240, 240);
+      doc.setFillColor(240, 240, 240); // Light gray header
       doc.rect(margin, detailsTableY, colWidth, 30, 'FD');
       doc.rect(margin + colWidth, detailsTableY, colWidth, 30, 'FD');
       doc.rect(margin + 2 * colWidth, detailsTableY, colWidth, 30, 'FD');
       
       doc.setFontSize(9);
       doc.setFont(undefined, 'bold');
-      doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
+      doc.setTextColor(0, 0, 0); // Black headers
       doc.text('Prérequis', margin + 5, detailsTableY + 18);
       doc.text('Objectifs visés', margin + colWidth + 5, detailsTableY + 18);
       doc.text('Compétences acquises', margin + 2 * colWidth + 5, detailsTableY + 18);
-      doc.setTextColor(0, 0, 0);
       
       y = detailsTableY + 30;
       
@@ -204,21 +200,20 @@ export function generatePDF(formData) {
         const colTheorie = margin + 400;
         const colPratique = margin + 480;
         
-        // Table header with ABBK Red background
-        doc.setFillColor(redRgb.r, redRgb.g, redRgb.b);
+        // Table header - GRAY background
+        doc.setFillColor(220, 220, 220); // Gray background
         doc.rect(margin, tableStartY, tableWidth, rowHeight, 'F');
         doc.rect(margin, tableStartY, tableWidth, rowHeight, 'S');
 
         doc.setFontSize(8);
         doc.setFont(undefined, 'bold');
-        doc.setTextColor(255, 255, 255);
+        doc.setTextColor(0, 0, 0); // Black text
         doc.text('Jours', colJour + 5, tableStartY + 16);
         doc.text('Contenu / Concepts', colContenu + 5, tableStartY + 16);
         doc.text('Méthodes', colMethodes + 5, tableStartY + 16);
         doc.text('Durée (H)', colTheorie + 5, tableStartY + 12);
         doc.text('Théorie', colTheorie + 5, tableStartY + 22);
         doc.text('Pratique', colPratique + 5, tableStartY + 22);
-        doc.setTextColor(0, 0, 0);
 
         doc.line(colContenu, tableStartY, colContenu, tableStartY + rowHeight);
         doc.line(colMethodes, tableStartY, colMethodes, tableStartY + rowHeight);
@@ -258,7 +253,7 @@ export function generatePDF(formData) {
 
         y += 10;
 
-        // Total hours with ABBK Red
+        // Total hours - BLACK
         const totalTheory = formationData.schedule.reduce((sum, day) => 
           sum + (parseFloat(day.theoryHours) || 0), 0
         );
@@ -268,16 +263,15 @@ export function generatePDF(formData) {
         
         doc.setFont(undefined, 'bold');
         doc.setFontSize(9);
-        doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
+        doc.setTextColor(0, 0, 0); // Black text
         doc.text(`Total Théorie: ${totalTheory}h | Total Pratique: ${totalPractice}h | Total: ${totalTheory + totalPractice}h`, 
           margin, y);
-        doc.setTextColor(0, 0, 0);
         y += 25;
       }
 
       if (formationIndex < formData.selectedFormations.length - 1) {
         y += 10;
-        doc.setDrawColor(grayRgb.r, grayRgb.g, grayRgb.b);
+        doc.setDrawColor(200, 200, 200);
         doc.line(margin, y, pageWidth - margin, y);
         doc.setDrawColor(0, 0, 0);
         y += 20;
@@ -289,7 +283,7 @@ export function generatePDF(formData) {
     
     doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
-    doc.setTextColor(blackRgb.r, blackRgb.g, blackRgb.b);
+    doc.setTextColor(0, 0, 0); // Black
     doc.text("Nature de l'intervention: ", margin, y);
     
     doc.setFont(undefined, 'normal');
@@ -304,9 +298,8 @@ export function generatePDF(formData) {
     doc.setFont(undefined, 'normal');
     doc.text(formData.referenceBC || '', margin + doc.getTextWidth('Référence BC:   '), y);
     y += 25;
-    doc.setTextColor(0, 0, 0);
 
-    // License Table with ABBK Red header
+    // License Table - GRAY header
     doc.setLineWidth(1);
     const tableStartY = y;
     const col1X = margin;
@@ -316,18 +309,17 @@ export function generatePDF(formData) {
     const tableWidth = pageWidth - 2 * margin;
     const rowHeight = 25;
     
-    doc.setFillColor(redRgb.r, redRgb.g, redRgb.b);
+    doc.setFillColor(220, 220, 220); // Gray header
     doc.rect(margin, tableStartY, tableWidth, rowHeight, 'F');
     doc.rect(margin, tableStartY, tableWidth, rowHeight, 'S');
 
     doc.setFontSize(9);
     doc.setFont(undefined, 'bold');
-    doc.setTextColor(255, 255, 255);
+    doc.setTextColor(0, 0, 0); // Black text
     doc.text('Licence(s) installée(s)', col1X + 5, tableStartY + 16);
     doc.text('Quantité', col2X + 5, tableStartY + 16);
     doc.text('Numéro de série du logiciel', col3X + 5, tableStartY + 16);
     doc.text('Numéro de facture', col4X + 5, tableStartY + 16);
-    doc.setTextColor(0, 0, 0);
 
     doc.line(col2X, tableStartY, col2X, tableStartY + rowHeight);
     doc.line(col3X, tableStartY, col3X, tableStartY + rowHeight);
@@ -360,7 +352,7 @@ export function generatePDF(formData) {
     y += 20;
   }
 
-  // ===== INTERVENANT TABLE with ABBK Red header =====
+  // ===== INTERVENANT TABLE - GRAY header =====
   const intervTableY = y;
   const intervCol1X = margin;
   const intervCol2X = margin + 200;
@@ -368,17 +360,16 @@ export function generatePDF(formData) {
   const tableWidth = pageWidth - 2 * margin;
   const rowHeight = 25;
   
-  doc.setFillColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setFillColor(220, 220, 220); // Gray header
   doc.rect(margin, intervTableY, tableWidth, rowHeight, 'F');
   doc.rect(margin, intervTableY, tableWidth, rowHeight, 'S');
 
   doc.setFont(undefined, 'bold');
   doc.setFontSize(9);
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(0, 0, 0); // Black text
   doc.text('Intervenant(s)', intervCol1X + 5, intervTableY + 16);
   doc.text("Date d'intervention", intervCol2X + 5, intervTableY + 16);
   doc.text("Numéro d'intervention", intervCol3X + 5, intervTableY + 16);
-  doc.setTextColor(0, 0, 0);
 
   doc.line(intervCol2X, intervTableY, intervCol2X, intervTableY + rowHeight);
   doc.line(intervCol3X, intervTableY, intervCol3X, intervTableY + rowHeight);
@@ -398,14 +389,13 @@ export function generatePDF(formData) {
 
   // ===== OBSERVATIONS =====
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(blackRgb.r, blackRgb.g, blackRgb.b);
+  doc.setTextColor(0, 0, 0);
   doc.text('Observations: ', margin, y);
   doc.setFont(undefined, 'normal');
   const obsText = formData.observations || '';
   const obsLines = doc.splitTextToSize(obsText, pageWidth - margin * 2 - 100);
   doc.text(obsLines, margin + doc.getTextWidth('Observations:     '), y);
   y += Math.max(20, obsLines.length * 12) + 15;
-  doc.setTextColor(0, 0, 0);
 
   // ===== SIGNATURE SECTION =====
   const signatureY = pageHeight - 170;
@@ -419,6 +409,7 @@ export function generatePDF(formData) {
   doc.rect(box0X, y, leftBoxWidth, signBoxHeight);
   doc.setFont(undefined, 'bold');
   doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
   doc.text('Fait à : ', box0X + 5, y + 20);
   doc.setFont(undefined, 'normal');
   doc.text(formData.location || 'Ariana', box0X + 35, y + 20);
@@ -441,7 +432,7 @@ export function generatePDF(formData) {
   doc.rect(box3X, y, signBoxWidth, signBoxHeight);
   doc.text("Signature d'intervenant:", box3X + 5, y + 12);
 
-  // ===== FOOTER with ABBK colors =====
+  // ===== FOOTER - BLACK =====
   const footerY = pageHeight - 50;
   doc.setFillColor(blackRgb.r, blackRgb.g, blackRgb.b);
   doc.rect(10, footerY, pageWidth - 20, 40, 'F');

@@ -28,26 +28,21 @@ function createPresencePDF(formData) {
   let y = 20;
 
   const presenceData = formData.presenceData || {};
-  
-  const redRgb = hexToRgb(ABBK_COLORS.red);
-  const darkRedRgb = hexToRgb(ABBK_COLORS.darkred);
   const blackRgb = hexToRgb(ABBK_COLORS.black);
 
-  // Title with ABBK Red
+  // Title - BLACK
   doc.setFontSize(16);
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text('FICHE', pageWidth / 2, y, { align: 'center' });
   y += 18;
   doc.text('DE PRÉSENCE', pageWidth / 2, y, { align: 'center' });
   y += 30;
-  doc.setTextColor(0, 0, 0);
 
-  // Header with logo and ABBK Red border
+  // Header with logo - BLACK border
   doc.setLineWidth(2);
-  doc.setDrawColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setDrawColor(0, 0, 0); // Black border
   doc.rect(margin, y, pageWidth - 2 * margin, 60);
-  doc.setDrawColor(0, 0, 0);
   
   // Add logo
   try {
@@ -58,21 +53,19 @@ function createPresencePDF(formData) {
   }
   
   doc.setFontSize(14);
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text('ABBK PHYSICSWORKS', margin + 100, y + 35);
-  doc.setTextColor(0, 0, 0);
   
   y += 70;
 
   // Entreprise field
   doc.setFontSize(10);
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(blackRgb.r, blackRgb.g, blackRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text(`Entreprise : ${presenceData.entreprise || '.....'}`, margin, y);
   y += 25;
-  doc.setTextColor(0, 0, 0);
 
-  // Formation details grid (3x3)
+  // Formation details grid (3x3) - BLACK borders
   doc.setLineWidth(1);
   const gridHeight = 90;
   doc.rect(margin, y, pageWidth - 2 * margin, gridHeight);
@@ -83,74 +76,57 @@ function createPresencePDF(formData) {
   
   doc.setFontSize(8);
   doc.setFont(undefined, 'normal');
+  doc.setTextColor(0, 0, 0);
   
   // Row 1
   let rowY = gridStartY + 12;
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text('Thème de formation :', margin + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(presenceData.themeFormation || '', margin + 5, rowY + 12);
   
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text('Période de formation :', margin + colWidth + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(`${presenceData.periodeDebut || ''} à ${presenceData.periodeFin || ''}`, margin + colWidth + 5, rowY + 12);
   
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text('Heure de formation :', margin + 2 * colWidth + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(`${presenceData.heureDebut || ''} à ${presenceData.heureFin || ''}`, margin + 2 * colWidth + 5, rowY + 12);
   
   // Row 2
   rowY = gridStartY + rowHeight + 12;
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text('Cadre de formation :', margin + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(presenceData.cadreFormation || '', margin + 5, rowY + 12);
   
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text('Nombre de jours de formation :', margin + colWidth + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(presenceData.nombreJours || '', margin + colWidth + 5, rowY + 12);
   
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text('Lieu de formation :', margin + 2 * colWidth + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(presenceData.lieuFormation || '', margin + 2 * colWidth + 5, rowY + 12);
   
   // Row 3
   rowY = gridStartY + 2 * rowHeight + 12;
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text('Formateur :', margin + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(presenceData.formateur || '', margin + 5, rowY + 12);
   
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text('Durée de la formation :', margin + colWidth + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(presenceData.dureeFormation || '', margin + colWidth + 5, rowY + 12);
   
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
   doc.text('Mode de formation :', margin + 2 * colWidth + 5, rowY);
   doc.setFont(undefined, 'normal');
-  doc.setTextColor(0, 0, 0);
   doc.text(presenceData.modeFormation || '', margin + 2 * colWidth + 5, rowY + 12);
   
   // Draw grid lines
@@ -164,10 +140,9 @@ function createPresencePDF(formData) {
   // Participants table
   doc.setFont(undefined, 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text('Liste des participants', margin, y);
   y += 20;
-  doc.setTextColor(0, 0, 0);
 
   const tableStartY = y;
   const col1Width = 120;
@@ -176,13 +151,13 @@ function createPresencePDF(formData) {
   const jourWidth = Math.min(60, (pageWidth - 2 * margin - col1Width - col2Width - 80) / nombreJours);
   const detailsWidth = pageWidth - 2 * margin - col1Width - col2Width - (jourWidth * nombreJours);
   
-  // Table header with ABBK Red
-  doc.setFillColor(redRgb.r, redRgb.g, redRgb.b);
+  // Table header - GRAY background
+  doc.setFillColor(220, 220, 220); // Gray
   doc.rect(margin, tableStartY, pageWidth - 2 * margin, 25, 'F');
   doc.rect(margin, tableStartY, pageWidth - 2 * margin, 25, 'S');
   
   doc.setFontSize(8);
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(0, 0, 0); // Black text
   doc.text('Nom et Prénom', margin + 5, tableStartY + 16);
   doc.text('Établissement / Entreprise', margin + col1Width + 5, tableStartY + 16);
   
@@ -193,7 +168,6 @@ function createPresencePDF(formData) {
   doc.text('Détails', colX + 5, tableStartY + 16);
   
   y = tableStartY + 25;
-  doc.setTextColor(0, 0, 0);
   
   // Date sub-header
   doc.rect(margin, y, pageWidth - 2 * margin, 20, 'S');
@@ -258,13 +232,12 @@ function createPresencePDF(formData) {
     y += 25;
   });
   
-  // Formateur row with ABBK Red
-  doc.setFillColor(redRgb.r, redRgb.g, redRgb.b);
+  // Formateur row - GRAY background
+  doc.setFillColor(220, 220, 220); // Gray
   doc.rect(margin, y, pageWidth - 2 * margin, 25, 'FD');
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text('Formateur', margin + (col1Width + col2Width) / 2, y + 15, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
   
   // Vertical lines for formateur row
   doc.line(margin + col1Width, y, margin + col1Width, y + 25);
@@ -280,10 +253,9 @@ function createPresencePDF(formData) {
   // Notes
   doc.setFont(undefined, 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(redRgb.r, redRgb.g, redRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text('Note :', margin, y);
   y += 15;
-  doc.setTextColor(0, 0, 0);
   
   doc.setFont(undefined, 'normal');
   doc.setFontSize(8);
@@ -299,7 +271,7 @@ function createPresencePDF(formData) {
   // Signatures
   doc.setFont(undefined, 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(blackRgb.r, blackRgb.g, blackRgb.b);
+  doc.setTextColor(0, 0, 0); // Black
   doc.text(`Date Le : ${presenceData.dateLe || ''}`, margin, y);
   
   y += 20;
@@ -309,9 +281,8 @@ function createPresencePDF(formData) {
   
   y += 40;
   doc.text('Signature ABBK PHYSICSWORKS', pageWidth / 2, y, { align: 'center' });
-  doc.setTextColor(0, 0, 0);
 
-  // Footer with ABBK Black
+  // Footer - BLACK
   doc.setFillColor(blackRgb.r, blackRgb.g, blackRgb.b);
   doc.rect(10, pageHeight - 30, pageWidth - 20, 20, 'F');
   doc.setTextColor(255, 255, 255);
