@@ -387,15 +387,17 @@ export function generatePDF(formData) {
 
   y += rowHeight + 20;
 
-  // ===== OBSERVATIONS =====
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(0, 0, 0);
-  doc.text('Observations: ', margin, y);
-  doc.setFont(undefined, 'normal');
-  const obsText = formData.observations || '';
-  const obsLines = doc.splitTextToSize(obsText, pageWidth - margin * 2 - 100);
-  doc.text(obsLines, margin + doc.getTextWidth('Observations:     '), y);
-  y += Math.max(20, obsLines.length * 12) + 15;
+  // ===== OBSERVATIONS - Only for License mode =====
+  if (isLicense) {
+    doc.setFont(undefined, 'bold');
+    doc.setTextColor(0, 0, 0);
+    doc.text('Observations: ', margin, y);
+    doc.setFont(undefined, 'normal');
+    const obsText = formData.observations || '';
+    const obsLines = doc.splitTextToSize(obsText, pageWidth - margin * 2 - 100);
+    doc.text(obsLines, margin + doc.getTextWidth('Observations:     '), y);
+    y += Math.max(20, obsLines.length * 12) + 15;
+  }
 
   // ===== SIGNATURE SECTION =====
   const signatureY = pageHeight - 170;

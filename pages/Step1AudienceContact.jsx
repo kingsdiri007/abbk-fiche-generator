@@ -3,8 +3,10 @@ import { useFormContext } from '../context/FormContext';
 import { getAllClients, addClient, searchClients } from '../services/supabaseService';
 import { Search, Plus, X } from 'lucide-react';
 import { ABBK_COLORS } from '../utils/theme';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Step1AudienceContact() {
+   const { t, language, toggleLanguage } = useLanguage();
   const { formData, updateFormData } = useFormContext();
   const [clients, setClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -325,4 +327,5 @@ export default function Step1AudienceContact() {
       </div>
     </div>
   );
+  
 }

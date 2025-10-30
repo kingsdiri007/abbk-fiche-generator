@@ -1,0 +1,484 @@
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const LanguageContext = createContext();
+
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within LanguageProvider');
+  }
+  return context;
+};
+
+// Translation dictionary
+const translations = {
+  en: {
+    // Header
+    'header.home': 'Home',
+    'header.create': 'Create',
+    'header.saved': 'Saved',
+    'header.logout': 'Logout',
+    'header.login': 'Login',
+    
+    // Home Page
+    'home.title': 'ABBK PhysicsWorks',
+    'home.subtitle': 'Fiche Generator Platform',
+    'home.description': 'Professional Document Generation System',
+    'home.createTitle': 'Create New Fiche',
+    'home.createDesc': 'Generate professional formation and installation documents with our guided wizard.',
+    'home.createFeature1': 'Formation programs',
+    'home.createFeature2': 'License installations',
+    'home.createFeature3': 'PDF export ready',
+    'home.getStarted': 'Get Started',
+    'home.savedTitle': 'Saved Fiches',
+    'home.savedDesc': 'Access, download, and manage all your previously generated documents.',
+    'home.savedFeature1': 'Search and filter',
+    'home.savedFeature2': 'Download PDFs',
+    'home.savedFeature3': 'Edit and regenerate',
+    'home.viewArchive': 'View Archive',
+    'home.whyChoose': 'Why Choose ABBK Fiche Generator?',
+    'home.professionalTitle': 'Professional Templates',
+    'home.professionalDesc': 'Industry-standard document formats for formations and installations',
+    'home.easyTitle': 'Easy to Use',
+    'home.easyDesc': 'Step-by-step wizard guides you through the entire process',
+    'home.cloudTitle': 'Cloud Storage',
+    'home.cloudDesc': 'Access your documents anywhere, anytime with secure cloud storage',
+    'home.totalSteps': 'Total Steps',
+    'home.documentTypes': 'Document Types',
+    'home.exportFormat': 'Export Format',
+    'home.needHelp': 'Need Help?',
+    'home.helpDesc': 'Contact our support team for assistance with document generation',
+    
+    // Progress Bar
+    'progress.contact': 'Contact',
+    'progress.intervention': 'Intervention',
+    'progress.details': 'Details',
+    'progress.preview': 'Preview',
+    'progress.plan': 'Plan',
+    'progress.presence': 'Présence',
+    'progress.evaluation': 'Évaluation',
+    'progress.current': 'Current',
+    'progress.formationPack': 'Formation Pack (Optional)',
+    'progress.inProgress': 'In Progress',
+    
+    // Navigation Buttons
+    'nav.back': 'Back',
+    'nav.next': 'Next',
+    'nav.downloadPdf': 'Download PDF',
+    'nav.generating': 'Generating...',
+    'nav.generateFichePlan': 'Generate Fiche Plan',
+    'nav.generatingPlan': 'Generating Plan...',
+    'nav.generateFichePresence': 'Generate Fiche Présence',
+    'nav.completePack': 'Complete Formation Pack',
+    'nav.completingPack': 'Completing Pack...',
+    
+    // Step 1 - Client Selection
+    'step1.title': 'CLIENT SELECTION',
+    'step1.search': 'Search by ID or Name...',
+    'step1.addClient': 'Add New Client',
+    'step1.newClient': 'New Client',
+    'step1.companyName': 'Company Name',
+    'step1.matriculeFiscal': 'Matricule Fiscal',
+    'step1.address': 'Address',
+    'step1.phone': 'Phone',
+    'step1.contactInfo': 'Contact Information',
+    'step1.selectClient': 'Select Client:',
+    'step1.selectPlaceholder': '-- Select a client --',
+    'step1.clientName': 'Client Name:',
+    'step1.clientId': 'Client ID:',
+    'step1.selectToContinue': 'Select a client to continue',
+    'step1.searchOrAdd': 'Search by ID/Name or add a new client',
+    'step1.clientsFound': 'client(s) found',
+    
+    // Step 2 - Intervention Type
+    'step2.formation': 'Formation',
+    'step2.license': 'License',
+    'step2.formationInfo': 'Formations Planning',
+    'step2.licenseInfo': 'License Information',
+    'step2.selectType': 'Select intervention type (Formation or License)',
+    'step2.selectFormation': 'Please select at least one formation',
+    'step2.formationName': 'Nom de formation:',
+    'step2.reference': 'Référence:',
+    'step2.prerequisites': 'Prérequis:',
+    'step2.objectives': 'Objectifs visés:',
+    'step2.competencies': 'Compétences acquises:',
+    'step2.schedule': 'Programme de Formation:',
+    'step2.addDay': 'Add Day',
+    'step2.allSoftware': 'All Software',
+    'step2.selectFormations': 'Select one or more formations',
+    'step2.selected': 'formation(s) selected',
+    'step2.unsavedChanges': 'Unsaved changes',
+    
+    // Step 3 - Common Details
+    'step3.title': 'Intervention Details',
+    'step3.nature': "Nature de l'intervention:",
+    'step3.observations': 'Observations:',
+    'step3.referenceBC': 'Référence BC:',
+    'step3.date': "Date d'intervention:",
+    'step3.intervenant': 'Intervenant(s):',
+    'step3.selectIntervenant': '-- Select Intervenant --',
+    'step3.location': 'Fait à (Location):',
+    'step3.autoGenerated': '(Auto-generated)',
+    
+    // Step 4 - Preview
+    'step4.title': 'Preview',
+    'step4.formation': 'Formation',
+    'step4.licenseInstalled': 'Licence(s) installée(s)',
+    'step4.quantity': 'Quantité',
+    'step4.serialNumber': 'Numéro de série',
+    'step4.invoiceNumber': 'Numéro de facture',
+    'step4.noLicenses': 'No licenses added',
+    
+    // Step 5 - Plan Formation
+    'step5.title': 'FICHE PLAN DE FORMATION',
+    'step5.step': 'Step 5 of 7',
+    'step5.addFormation': 'Add Formation',
+    'step5.formateur': 'Formateur',
+    'step5.nombreJours': 'Nombre de jours',
+    'step5.duree': 'Durée',
+    'step5.lieu': 'Lieu',
+    'step5.dateDebut': 'Date début',
+    'step5.dateFin': 'Date fin',
+    'step5.heures': 'Heures',
+    'step5.details': 'Détails',
+    'step5.note': 'Note :',
+    'step5.contactNote': 'Contact Note:',
+    'step5.date': 'Date Le :',
+    'step5.signature': 'Signature',
+    'step5.signatureABBK': 'Signature ABBK PHYSICSWORKS',
+    
+    // Step 6 - Presence
+    'step6.title': 'FICHE DE PRÉSENCE',
+    'step6.step': 'Step 6 of 7',
+    'step6.entreprise': 'Entreprise :',
+    'step6.theme': 'Thème de formation :',
+    'step6.periode': 'Période de formation :',
+    'step6.heure': 'Heure de formation :',
+    'step6.cadre': 'Cadre de formation :',
+    'step6.nombreJours': 'Nombre de jours de formation (max 7) :',
+    'step6.lieu': 'Lieu de formation :',
+    'step6.formateur': 'Formateur :',
+    'step6.duree': 'Durée de la formation :',
+    'step6.mode': 'Mode de formation :',
+    'step6.participants': 'Liste des participants',
+    'step6.addParticipant': 'Add Participant',
+    'step6.nomPrenom': 'Nom et Prénom',
+    'step6.etablissement': 'Établissement / Entreprise',
+    'step6.jours': 'Jours',
+    'step6.details': 'Détails',
+    'step6.note': 'Note :',
+    'step6.dateLe': 'Date Le :',
+    'step6.signature': 'Signature',
+    'step6.signatureFormateur': 'Signature de Formateur',
+    'step6.signatureABBK': 'Signature ABBK PHYSICSWORKS',
+    
+    // Step 7 - Evaluation
+    'step7.title': "FICHE D'ÉVALUATION",
+    'step7.subtitle': 'DES PARTICIPANTS',
+    'step7.step': 'Step 7 of 7 - Final Step!',
+    'step7.theme': 'Thème de formation :',
+    'step7.periode': 'Période de formation :',
+    'step7.duree': 'Durée de la formation :',
+    'step7.formateur': 'Formateur :',
+    'step7.participants': 'Liste des participants',
+    'step7.noteGeneral': 'Note Général',
+    'step7.note': 'Note :',
+    'step7.dateLe': 'Date Le :',
+    'step7.signatureFormateur': 'Signature de Formateur',
+    'step7.signatureABBK': 'Signature ABBK PHYSICSWORKS',
+    
+    // Saved Page
+    'saved.title': 'Saved Fiches',
+    'saved.found': 'fiches found',
+    'saved.refresh': 'Refresh',
+    'saved.search': 'Search by client name, ID, or filename...',
+    'saved.allTypes': 'All Types',
+    'saved.formationOnly': 'Formation Only',
+    'saved.licenseOnly': 'License Only',
+    'saved.loading': 'Loading fiches...',
+    'saved.noFiches': 'No fiches found',
+    'saved.tryAdjusting': 'Try adjusting your search or filters',
+    'saved.createFirst': 'Create your first fiche to get started!',
+    'saved.formation': 'Formation',
+    'saved.license': 'License',
+    'saved.formations': 'Formations:',
+    'saved.licenses': 'Licenses:',
+    'saved.edit': 'Edit',
+    'saved.delete': 'Delete fiche',
+    'saved.confirmDelete': 'Are you sure you want to delete this fiche?',
+    
+    // Common
+    'common.client': 'Client',
+    'common.address': 'Address',
+    'common.phone': 'Phone',
+    'common.cancel': 'Cancel',
+    'common.save': 'Save',
+    'common.close': 'Close',
+    'common.loading': 'Loading...',
+    'common.error': 'Error',
+    'common.success': 'Success',
+    'common.required': 'required',
+    
+    // Errors
+    'error.fillRequired': 'Please complete all required fields',
+    'error.fixErrors': 'Please fix the errors before continuing',
+    'error.selectClient': 'Please select a client from the dropdown',
+    'error.selectType': 'Please select intervention type (Formation or License)',
+    'error.enterReference': 'Please enter Reference BC',
+    'error.selectDate': 'Please select intervention date',
+    'error.selectIntervenant': 'Please select an intervenant',
+    'error.enterLocation': 'Please enter location (Fait à)',
+    'error.fillFormationName': 'Please fill in at least one formation name',
+    'error.addParticipant': 'Please add at least one participant',
+    'error.evaluationMissing': 'Evaluation data is missing',
+    
+    // Nav additional
+    'nav.continueTo': 'Continue to',
+    'nav.saveFinish': 'Save & Finish Later',
+    'nav.continueFromSaved': 'You can continue this pack from the Saved page',
+    'common.generated': 'Generated',
+  },
+  
+  fr: {
+    // Header
+    'header.home': 'Accueil',
+    'header.create': 'Créer',
+    'header.saved': 'Enregistrés',
+    'header.logout': 'Déconnexion',
+    'header.login': 'Connexion',
+    
+    // Home Page
+    'home.title': 'ABBK PhysicsWorks',
+    'home.subtitle': 'Plateforme de Génération de Fiches',
+    'home.description': 'Système Professionnel de Génération de Documents',
+    'home.createTitle': 'Créer une Nouvelle Fiche',
+    'home.createDesc': 'Générez des documents professionnels de formation et d\'installation avec notre assistant guidé.',
+    'home.createFeature1': 'Programmes de formation',
+    'home.createFeature2': 'Installations de licences',
+    'home.createFeature3': 'Export PDF prêt',
+    'home.getStarted': 'Commencer',
+    'home.savedTitle': 'Fiches Enregistrées',
+    'home.savedDesc': 'Accédez, téléchargez et gérez tous vos documents précédemment générés.',
+    'home.savedFeature1': 'Recherche et filtrage',
+    'home.savedFeature2': 'Télécharger les PDFs',
+    'home.savedFeature3': 'Modifier et régénérer',
+    'home.viewArchive': 'Voir les Archives',
+    'home.whyChoose': 'Pourquoi Choisir le Générateur de Fiches ABBK?',
+    'home.professionalTitle': 'Modèles Professionnels',
+    'home.professionalDesc': 'Formats de documents standard pour les formations et installations',
+    'home.easyTitle': 'Facile à Utiliser',
+    'home.easyDesc': 'L\'assistant étape par étape vous guide tout au long du processus',
+    'home.cloudTitle': 'Stockage Cloud',
+    'home.cloudDesc': 'Accédez à vos documents n\'importe où, n\'importe quand avec un stockage cloud sécurisé',
+    'home.totalSteps': 'Étapes Totales',
+    'home.documentTypes': 'Types de Documents',
+    'home.exportFormat': 'Format d\'Export',
+    'home.needHelp': 'Besoin d\'Aide?',
+    'home.helpDesc': 'Contactez notre équipe d\'assistance pour la génération de documents',
+    
+    // Progress Bar
+    'progress.contact': 'Contact',
+    'progress.intervention': 'Intervention',
+    'progress.details': 'Détails',
+    'progress.preview': 'Aperçu',
+    'progress.plan': 'Plan',
+    'progress.presence': 'Présence',
+    'progress.evaluation': 'Évaluation',
+    'progress.current': 'Actuel',
+    'progress.formationPack': 'Pack de Formation (Optionnel)',
+    'progress.inProgress': 'En Cours',
+    
+    // Navigation Buttons
+    'nav.back': 'Retour',
+    'nav.next': 'Suivant',
+    'nav.downloadPdf': 'Télécharger PDF',
+    'nav.generating': 'Génération...',
+    'nav.generateFichePlan': 'Générer Fiche Plan',
+    'nav.generatingPlan': 'Génération Plan...',
+    'nav.generateFichePresence': 'Générer Fiche Présence',
+    'nav.completePack': 'Compléter le Pack de Formation',
+    'nav.completingPack': 'Finalisation du Pack...',
+    
+    // Step 1 - Client Selection
+    'step1.title': 'SÉLECTION CLIENT',
+    'step1.search': 'Rechercher par ID ou Nom...',
+    'step1.addClient': 'Ajouter un Nouveau Client',
+    'step1.newClient': 'Nouveau Client',
+    'step1.companyName': 'Nom de l\'Entreprise',
+    'step1.matriculeFiscal': 'Matricule Fiscal',
+    'step1.address': 'Adresse',
+    'step1.phone': 'Téléphone',
+    'step1.contactInfo': 'Informations de Contact',
+    'step1.selectClient': 'Sélectionner Client:',
+    'step1.selectPlaceholder': '-- Sélectionner un client --',
+    'step1.clientName': 'Nom du Client:',
+    'step1.clientId': 'ID Client:',
+    'step1.selectToContinue': 'Sélectionnez un client pour continuer',
+    'step1.searchOrAdd': 'Rechercher par ID/Nom ou ajouter un nouveau client',
+    'step1.clientsFound': 'client(s) trouvé(s)',
+    
+    // Step 2 - Intervention Type
+    'step2.formation': 'Formation',
+    'step2.license': 'Licence',
+    'step2.formationInfo': 'Planification des Formations',
+    'step2.licenseInfo': 'Informations de Licence',
+    'step2.selectType': 'Sélectionner le type d\'intervention (Formation ou Licence)',
+    'step2.selectFormation': 'Veuillez sélectionner au moins une formation',
+    'step2.formationName': 'Nom de formation:',
+    'step2.reference': 'Référence:',
+    'step2.prerequisites': 'Prérequis:',
+    'step2.objectives': 'Objectifs visés:',
+    'step2.competencies': 'Compétences acquises:',
+    'step2.schedule': 'Programme de Formation:',
+    'step2.addDay': 'Ajouter un Jour',
+    'step2.allSoftware': 'Tous les Logiciels',
+    'step2.selectFormations': 'Sélectionner une ou plusieurs formations',
+    'step2.selected': 'formation(s) sélectionnée(s)',
+    'step2.unsavedChanges': 'Modifications non enregistrées',
+    
+    // Step 3 - Common Details
+    'step3.title': 'Détails de l\'Intervention',
+    'step3.nature': 'Nature de l\'intervention:',
+    'step3.observations': 'Observations:',
+    'step3.referenceBC': 'Référence BC:',
+    'step3.date': 'Date d\'intervention:',
+    'step3.intervenant': 'Intervenant(s):',
+    'step3.selectIntervenant': '-- Sélectionner Intervenant --',
+    'step3.location': 'Fait à (Lieu):',
+    'step3.autoGenerated': '(Généré automatiquement)',
+    
+    // Step 4 - Preview
+    'step4.title': 'Aperçu',
+    'step4.formation': 'Formation',
+    'step4.licenseInstalled': 'Licence(s) installée(s)',
+    'step4.quantity': 'Quantité',
+    'step4.serialNumber': 'Numéro de série',
+    'step4.invoiceNumber': 'Numéro de facture',
+    'step4.noLicenses': 'Aucune licence ajoutée',
+    
+    // Step 5 - Plan Formation
+    'step5.title': 'FICHE PLAN DE FORMATION',
+    'step5.step': 'Étape 5 sur 7',
+    'step5.addFormation': 'Ajouter Formation',
+    'step5.formateur': 'Formateur',
+    'step5.nombreJours': 'Nombre de jours',
+    'step5.duree': 'Durée',
+    'step5.lieu': 'Lieu',
+    'step5.dateDebut': 'Date début',
+    'step5.dateFin': 'Date fin',
+    'step5.heures': 'Heures',
+    'step5.details': 'Détails',
+    'step5.note': 'Note :',
+    'step5.contactNote': 'Note de Contact:',
+    'step5.date': 'Date Le :',
+    'step5.signature': 'Signature',
+    'step5.signatureABBK': 'Signature ABBK PHYSICSWORKS',
+    
+    // Step 6 - Presence
+    'step6.title': 'FICHE DE PRÉSENCE',
+    'step6.step': 'Étape 6 sur 7',
+    'step6.entreprise': 'Entreprise :',
+    'step6.theme': 'Thème de formation :',
+    'step6.periode': 'Période de formation :',
+    'step6.heure': 'Heure de formation :',
+    'step6.cadre': 'Cadre de formation :',
+    'step6.nombreJours': 'Nombre de jours de formation (max 7) :',
+    'step6.lieu': 'Lieu de formation :',
+    'step6.formateur': 'Formateur :',
+    'step6.duree': 'Durée de la formation :',
+    'step6.mode': 'Mode de formation :',
+    'step6.participants': 'Liste des participants',
+    'step6.addParticipant': 'Ajouter Participant',
+    'step6.nomPrenom': 'Nom et Prénom',
+    'step6.etablissement': 'Établissement / Entreprise',
+    'step6.jours': 'Jours',
+    'step6.details': 'Détails',
+    'step6.note': 'Note :',
+    'step6.dateLe': 'Date Le :',
+    'step6.signature': 'Signature',
+    'step6.signatureFormateur': 'Signature de Formateur',
+    'step6.signatureABBK': 'Signature ABBK PHYSICSWORKS',
+    
+    // Step 7 - Evaluation
+    'step7.title': 'FICHE D\'ÉVALUATION',
+    'step7.subtitle': 'DES PARTICIPANTS',
+    'step7.step': 'Étape 7 sur 7 - Dernière Étape!',
+    'step7.theme': 'Thème de formation :',
+    'step7.periode': 'Période de formation :',
+    'step7.duree': 'Durée de la formation :',
+    'step7.formateur': 'Formateur :',
+    'step7.participants': 'Liste des participants',
+    'step7.noteGeneral': 'Note Général',
+    'step7.note': 'Note :',
+    'step7.dateLe': 'Date Le :',
+    'step7.signatureFormateur': 'Signature de Formateur',
+    'step7.signatureABBK': 'Signature ABBK PHYSICSWORKS',
+    
+    // Saved Page
+    'saved.title': 'Fiches Enregistrées',
+    'saved.found': 'fiches trouvées',
+    'saved.refresh': 'Actualiser',
+    'saved.search': 'Rechercher par nom de client, ID ou nom de fichier...',
+    'saved.allTypes': 'Tous les Types',
+    'saved.formationOnly': 'Formation Seulement',
+    'saved.licenseOnly': 'Licence Seulement',
+    'saved.loading': 'Chargement des fiches...',
+    'saved.noFiches': 'Aucune fiche trouvée',
+    'saved.tryAdjusting': 'Essayez d\'ajuster votre recherche ou vos filtres',
+    'saved.createFirst': 'Créez votre première fiche pour commencer!',
+    'saved.formation': 'Formation',
+    'saved.license': 'Licence',
+    'saved.formations': 'Formations:',
+    'saved.licenses': 'Licences:',
+    'saved.edit': 'Modifier',
+    'saved.delete': 'Supprimer la fiche',
+    'saved.confirmDelete': 'Êtes-vous sûr de vouloir supprimer cette fiche?',
+    
+    // Common
+    'common.client': 'Client',
+    'common.address': 'Adresse',
+    'common.phone': 'Téléphone',
+    'common.cancel': 'Annuler',
+    'common.save': 'Enregistrer',
+    'common.close': 'Fermer',
+    'common.loading': 'Chargement...',
+    'common.error': 'Erreur',
+    'common.success': 'Succès',
+    'common.required': 'requis',
+    
+    // Errors
+    'error.fillRequired': 'Veuillez compléter tous les champs obligatoires',
+    'error.fixErrors': 'Veuillez corriger les erreurs avant de continuer',
+    'error.selectClient': 'Veuillez sélectionner un client dans la liste',
+    'error.selectType': 'Veuillez sélectionner le type d\'intervention (Formation ou Licence)',
+    'error.enterReference': 'Veuillez entrer la Référence BC',
+    'error.selectDate': 'Veuillez sélectionner la date d\'intervention',
+    'error.selectIntervenant': 'Veuillez sélectionner un intervenant',
+    'error.enterLocation': 'Veuillez entrer le lieu (Fait à)',
+  }
+};
+
+export const LanguageProvider = ({ children }) => {
+  const [language, setLanguage] = useState(() => {
+    const saved = localStorage.getItem('language');
+    return saved || 'fr'; // Default to French
+  });
+
+  useEffect(() => {
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'en' ? 'fr' : 'en');
+  };
+
+  const t = (key) => {
+    return translations[language][key] || key;
+  };
+
+  return (
+    <LanguageContext.Provider value={{ language, toggleLanguage, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};

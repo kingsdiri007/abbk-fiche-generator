@@ -33,7 +33,7 @@ function createPresencePDF(formData) {
   // Title - BLACK
   doc.setFontSize(16);
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(0, 0, 0); // Black
+  doc.setTextColor(0, 0, 0);
   doc.text('FICHE', pageWidth / 2, y, { align: 'center' });
   y += 18;
   doc.text('DE PRÉSENCE', pageWidth / 2, y, { align: 'center' });
@@ -41,10 +41,9 @@ function createPresencePDF(formData) {
 
   // Header with logo - BLACK border
   doc.setLineWidth(2);
-  doc.setDrawColor(0, 0, 0); // Black border
+  doc.setDrawColor(0, 0, 0);
   doc.rect(margin, y, pageWidth - 2 * margin, 60);
   
-  // Add logo
   try {
     const logoPath = '/logo-abbk.png';
     doc.addImage(logoPath, 'PNG', margin + 10, y + 10, 80, 40);
@@ -53,7 +52,7 @@ function createPresencePDF(formData) {
   }
   
   doc.setFontSize(14);
-  doc.setTextColor(0, 0, 0); // Black
+  doc.setTextColor(0, 0, 0);
   doc.text('ABBK PHYSICSWORKS', margin + 100, y + 35);
   
   y += 70;
@@ -61,7 +60,7 @@ function createPresencePDF(formData) {
   // Entreprise field
   doc.setFontSize(10);
   doc.setFont(undefined, 'bold');
-  doc.setTextColor(0, 0, 0); // Black
+  doc.setTextColor(0, 0, 0);
   doc.text(`Entreprise : ${presenceData.entreprise || '.....'}`, margin, y);
   y += 25;
 
@@ -140,7 +139,7 @@ function createPresencePDF(formData) {
   // Participants table
   doc.setFont(undefined, 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0); // Black
+  doc.setTextColor(0, 0, 0);
   doc.text('Liste des participants', margin, y);
   y += 20;
 
@@ -148,16 +147,16 @@ function createPresencePDF(formData) {
   const col1Width = 120;
   const col2Width = 120;
   const nombreJours = parseInt(presenceData.nombreJours) || 2;
-  const jourWidth = Math.min(60, (pageWidth - 2 * margin - col1Width - col2Width - 80) / nombreJours);
+  const jourWidth = Math.min(40, (pageWidth - 2 * margin - col1Width - col2Width - 80) / nombreJours);
   const detailsWidth = pageWidth - 2 * margin - col1Width - col2Width - (jourWidth * nombreJours);
   
   // Table header - GRAY background
-  doc.setFillColor(220, 220, 220); // Gray
+  doc.setFillColor(220, 220, 220);
   doc.rect(margin, tableStartY, pageWidth - 2 * margin, 25, 'F');
   doc.rect(margin, tableStartY, pageWidth - 2 * margin, 25, 'S');
   
   doc.setFontSize(8);
-  doc.setTextColor(0, 0, 0); // Black text
+  doc.setTextColor(0, 0, 0);
   doc.text('Nom et Prénom', margin + 5, tableStartY + 16);
   doc.text('Établissement / Entreprise', margin + col1Width + 5, tableStartY + 16);
   
@@ -170,7 +169,8 @@ function createPresencePDF(formData) {
   y = tableStartY + 25;
   
   // Date sub-header
-  doc.rect(margin, y, pageWidth - 2 * margin, 20, 'S');
+  doc.setFillColor(240, 240, 240);
+  doc.rect(margin, y, pageWidth - 2 * margin, 20, 'FD');
   
   const dates = [];
   if (presenceData.periodeDebut) {
@@ -185,6 +185,7 @@ function createPresencePDF(formData) {
   colX = margin + col1Width + col2Width;
   dates.forEach((date, idx) => {
     const x = colX + (idx * jourWidth) + (jourWidth / 2);
+    doc.setFontSize(6);
     doc.text(date, x, y + 13, { align: 'center' });
     if (idx > 0) {
       doc.line(colX + (idx * jourWidth), y, colX + (idx * jourWidth), y + 20);
@@ -198,27 +199,32 @@ function createPresencePDF(formData) {
   
   y += 20;
   
-  // Participants rows
-  doc.setFont(undefined, 'normal');
-  const participants = presenceData.participants || [];
-  participants.forEach((participant) => {
-    const rowStartY = y;
-    doc.rect(margin, y, pageWidth - 2 * margin, 25, 'S');
-    
-    const nomLines = doc.splitTextToSize(participant.nom || '', col1Width - 10);
-    doc.text(nomLines, margin + 5, y + 15);
-    
-    const etabLines = doc.splitTextToSize(participant.etablissement || '', col2Width - 10);
-    doc.text(etabLines, margin + col1Width + 5, y + 15);
-    
-    colX = margin + col1Width + col2Width;
-    (participant.jours || []).forEach((jour, idx) => {
-      const x = colX + (idx * jourWidth) + (jourWidth / 2);
-      doc.text(jour || '', x, y + 15, { align: 'center' });
-      if (idx > 0) {
-        doc.line(colX + (idx * jourWidth), y, colX + (idx * jourWidth), y + 25);
-      }
-    });
+ // Participants rows
+doc.setFont(undefined, 'normal');
+doc.setFontSize(8);
+const participants = presenceData.participants || [];
+participants.forEach((participant) => {
+  const rowStartY = y;
+  doc.rect(margin, y, pageWidth - 2 * margin, 25, 'S');
+  
+  const nomLines = doc.splitTextToSize(participant.nom || '', col1Width - 10);
+  doc.text(nomLines, margin + 5, y + 15);
+  
+  const etabLines = doc.splitTextToSize(participant.etablissement || '', col2Width - 10);
+  doc.text(etabLines, margin + col1Width + 5, y + 15);
+  
+  colX = margin + col1Width + col2Width;
+  // Draw vertical line before first day
+  doc.line(colX, y, colX, y + 25);
+  
+  (participant.jours || []).forEach((jour, idx) => {
+    const x = colX + (idx * jourWidth) + (jourWidth / 2);
+    // Display checkmark if present, otherwise show the value or empty
+    const displayText = jour ? (jour.toLowerCase() === '✓' || jour.toLowerCase() === 'v' ? '✓' : jour) : '';
+    doc.text(displayText, x, y + 15, { align: 'center' });
+    // Draw vertical line after each day column
+    doc.line(colX + ((idx + 1) * jourWidth), y, colX + ((idx + 1) * jourWidth), y + 25);
+  });
     
     colX = margin + col1Width + col2Width + (jourWidth * nombreJours);
     const detailLines = doc.splitTextToSize(participant.details || '', detailsWidth - 10);
@@ -232,28 +238,19 @@ function createPresencePDF(formData) {
     y += 25;
   });
   
-  // Formateur row - GRAY background
-  doc.setFillColor(220, 220, 220); // Gray
-  doc.rect(margin, y, pageWidth - 2 * margin, 25, 'FD');
-  doc.setFont(undefined, 'bold');
-  doc.setTextColor(0, 0, 0); // Black
-  doc.text('Formateur', margin + (col1Width + col2Width) / 2, y + 15, { align: 'center' });
-  
-  // Vertical lines for formateur row
-  doc.line(margin + col1Width, y, margin + col1Width, y + 25);
-  doc.line(margin + col1Width + col2Width, y, margin + col1Width + col2Width, y + 25);
-  colX = margin + col1Width + col2Width;
-  for (let i = 1; i < nombreJours; i++) {
-    doc.line(colX + (i * jourWidth), y, colX + (i * jourWidth), y + 25);
-  }
-  doc.line(margin + col1Width + col2Width + (jourWidth * nombreJours), y, margin + col1Width + col2Width + (jourWidth * nombreJours), y + 25);
-  
+// Formateur row - GRAY background, full width, no columns
+doc.setFillColor(220, 220, 220);
+doc.rect(margin, y, pageWidth - 2 * margin, 25, 'FD');
+doc.setFont(undefined, 'bold');
+doc.setTextColor(0, 0, 0);
+doc.text(`Formateur: ${presenceData.formateur || ''}`, margin + 5, y + 15);
+// No vertical lines - just one long row
   y += 35;
 
   // Notes
   doc.setFont(undefined, 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0); // Black
+  doc.setTextColor(0, 0, 0);
   doc.text('Note :', margin, y);
   y += 15;
   
@@ -271,7 +268,7 @@ function createPresencePDF(formData) {
   // Signatures
   doc.setFont(undefined, 'bold');
   doc.setFontSize(10);
-  doc.setTextColor(0, 0, 0); // Black
+  doc.setTextColor(0, 0, 0);
   doc.text(`Date Le : ${presenceData.dateLe || ''}`, margin, y);
   
   y += 20;

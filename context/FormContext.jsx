@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { INITIAL_FORM_DATA } from '../utils/constants';
 
 const FormContext = createContext();
@@ -12,9 +12,28 @@ export const useFormContext = () => {
 };
 
 export const FormProvider = ({ children }) => {
-  const [formData, setFormData] = useState(INITIAL_FORM_DATA);
-  const [currentStep, setCurrentStep] = useState(1);
+  // Load saved step and data from localStorage on mount
+  const [formData, setFormData] = useState(() => {
+    const savedData = localStorage.getItem('formData');
+    return savedData ? JSON.parse(savedData) : INITIAL_FORM_DATA;
+  });
+  
+  const [currentStep, setCurrentStepState] = useState(() => {
+    const savedStep = localStorage.getItem('currentStep');
+    return savedStep ? parseInt(savedStep) : 1;
+  });
+  
   const [toast, setToast] = useState(null);
+
+  // Save formData to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('formData', JSON.stringify(formData));
+  }, [formData]);
+
+  // Save currentStep to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('currentStep', currentStep.toString());
+  }, [currentStep]);
 
   const showToast = (message, type = 'info') => {
     setToast({ message, type });
@@ -51,26 +70,32 @@ export const FormProvider = ({ children }) => {
   };
 
   const goNext = () => {
-    if (currentStep < 7) setCurrentStep(currentStep + 1);
+    if (currentStep < 7) setCurrentStepState(currentStep + 1);
   };
 
   const goBack = () => {
-    if (currentStep > 1) setCurrentStep(currentStep - 1);
+    if (currentStep > 1) setCurrentStepState(currentStep - 1);
+  };
+
+  const setCurrentStep = (step) => {
+    setCurrentStepState(step);
   };
 
   const resetForm = () => {
     setFormData(INITIAL_FORM_DATA);
-    setCurrentStep(1);
+    setCurrentStepState(1);
+    localStorage.removeItem('formData');
+    localStorage.removeItem('currentStep');
   };
 
   return (
     <FormContext.Provider
       value={{
         formData,
-        setFormData, // IMPORTANT: Expose setFormData for edit functionality
+        setFormData,
         updateFormData,
         currentStep,
-        setCurrentStep, // IMPORTANT: Expose setCurrentStep for edit functionality
+        setCurrentStep,
         goNext,
         goBack,
         addLicense,

@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Plus, Archive, LogOut, User, Moon, Sun } from 'lucide-react';
+import { Home, Plus, Archive, LogOut, User, Moon, Sun, Languages } from 'lucide-react';
 import { getCurrentUser, signOut } from '../services/supabaseService';
+import { useLanguage } from '../context/LanguageContext';
 import { ABBK_COLORS } from '../utils/theme';
 
 export default function Header() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { language, toggleLanguage, t } = useLanguage();
   const [user, setUser] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
 
@@ -99,7 +101,7 @@ export default function Header() {
                 style={isActive('/') ? { backgroundColor: ABBK_COLORS.red } : {}}
               >
                 <Home size={18} />
-                <span>Home</span>
+                <span>{t('header.home')}</span>
               </Link>
 
               <Link
@@ -112,7 +114,7 @@ export default function Header() {
                 style={isActive('/create') ? { backgroundColor: ABBK_COLORS.red } : {}}
               >
                 <Plus size={18} />
-                <span>Create</span>
+                <span>{t('header.create')}</span>
               </Link>
 
               <Link
@@ -125,9 +127,21 @@ export default function Header() {
                 style={isActive('/saved') ? { backgroundColor: ABBK_COLORS.red } : {}}
               >
                 <Archive size={18} />
-                <span>Saved</span>
+                <span>{t('header.saved')}</span>
               </Link>
             </nav>
+
+            {/* Language Toggle */}
+            <button
+              onClick={toggleLanguage}
+              className="flex items-center gap-2 p-2 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              title={language === 'en' ? 'Switch to French' : 'Passer à l\'anglais'}
+            >
+              <Languages size={20} className="text-gray-600 dark:text-gray-300" />
+              <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase">
+                {language}
+              </span>
+            </button>
 
             {/* Dark Mode Toggle */}
             <button
@@ -158,7 +172,7 @@ export default function Header() {
                   style={{ color: ABBK_COLORS.red }}
                 >
                   <LogOut size={16} />
-                  Logout
+                  {t('header.logout')}
                 </button>
               </div>
             ) : (
@@ -169,7 +183,7 @@ export default function Header() {
                 onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
                 onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
               >
-                Login
+                {t('header.login')}
               </Link>
             )}
           </div>

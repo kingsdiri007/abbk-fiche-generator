@@ -1,6 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { FormProvider, useFormContext } from './context/FormContext';
+import { LanguageProvider } from './context/LanguageContext';
 import Header from './components/Header';
 import ProgressBar from './components/ProgressBar';
 import NavigationButtons from './components/NavigationButtons';
@@ -78,9 +79,11 @@ function AppContent() {
 export default function App() {
   return (
     <Router>
-      <FormProvider>
-        <AppContent />
-      </FormProvider>
+      <LanguageProvider>
+        <FormProvider>
+          <AppContent />
+        </FormProvider>
+      </LanguageProvider>
     </Router>
   );
 }
