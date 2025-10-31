@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import { useFormContext } from '../context/FormContext';
 import { Plus, Trash2 } from 'lucide-react';
 import { ABBK_COLORS } from '../utils/theme';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Step5PlanFormation() {
+  const { t } = useLanguage();
   const { formData, updateFormData } = useFormContext();
 
   // Auto-fill from formation data on first load - FIXED to fill ALL formations
@@ -22,10 +24,10 @@ export default function Step5PlanFormation() {
 
         return {
           formationName: formationData.formationName || '',
-          formateur: formData.intervenant || '', // Auto-fill formateur for ALL
+          formateur: formData.intervenant || '',
           nombreJours: nombreJours.toString(),
           dureeFormation: dureeFormation,
-          lieuFormation: formData.location || '', // Auto-fill lieu for ALL
+          lieuFormation: formData.location || '',
           dateDebut: formData.interventionDate || '',
           dateFin: '',
           heuresFormation: '9h - 17h',
@@ -109,23 +111,24 @@ export default function Step5PlanFormation() {
           className="text-white p-6 rounded-lg mb-8 -mx-8 -mt-8"
           style={{ background: `linear-gradient(135deg, ${ABBK_COLORS.red} 0%, ${ABBK_COLORS.darkred} 100%)` }}
         >
-          <h2 className="text-2xl font-bold text-center">FICHE PLAN DE FORMATION</h2>
-          <p className="text-center text-sm mt-2 opacity-90">Step 5 of 7</p>
+          <h2 className="text-2xl font-bold text-center">{t('step5.title')}</h2>
+          <p className="text-center text-sm mt-2 opacity-90">{t('step5.step')}</p>
         </div>
 
         {/* Client Info Summary */}
         <div className="bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-lg p-4 mb-6 transition-colors duration-300">
+          <h3 className="text-sm font-bold mb-3 text-gray-800 dark:text-white">{t('step5.clientSummary')}</h3>
           <div className="grid grid-cols-3 gap-4 text-sm">
             <div>
-              <span className="font-semibold text-gray-700 dark:text-gray-300">Client:</span>
+              <span className="font-semibold text-gray-700 dark:text-gray-300">{t('step5.client')}</span>
               <span className="ml-2 text-gray-900 dark:text-white">{formData.clientName}</span>
             </div>
             <div>
-              <span className="font-semibold text-gray-700 dark:text-gray-300">Location:</span>
+              <span className="font-semibold text-gray-700 dark:text-gray-300">{t('step5.location')}</span>
               <span className="ml-2 text-gray-900 dark:text-white">{formData.location}</span>
             </div>
             <div>
-              <span className="font-semibold text-gray-700 dark:text-gray-300">Intervenant:</span>
+              <span className="font-semibold text-gray-700 dark:text-gray-300">{t('step5.intervenant')}</span>
               <span className="ml-2 text-gray-900 dark:text-white">{formData.intervenant}</span>
             </div>
           </div>
@@ -134,7 +137,7 @@ export default function Step5PlanFormation() {
         {/* Formations Table - WIDER COLUMNS */}
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-800 dark:text-white">Formations Planning</h3>
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white">{t('step5.formationsPlanning')}</h3>
             
             <button
               onClick={addFormationRow}
@@ -144,7 +147,7 @@ export default function Step5PlanFormation() {
               onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
             >
               <Plus size={18} />
-              Add Formation
+              {t('step5.addFormation')}
             </button>
           </div>
 
@@ -153,31 +156,31 @@ export default function Step5PlanFormation() {
               <thead>
                 <tr className="bg-gray-200 dark:bg-gray-700 border-b-2 border-gray-800 dark:border-gray-600">
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-4 text-left font-bold min-w-[200px] text-gray-900 dark:text-white">
-                    Formation
+                    {t('step5.formation')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-4 text-left font-bold min-w-[150px] text-gray-900 dark:text-white">
-                    Formateur
+                    {t('step5.formateur')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-4 text-left font-bold min-w-[120px] text-gray-900 dark:text-white">
-                    Nombre de jours
+                    {t('step5.nombreJours')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-4 text-left font-bold min-w-[120px] text-gray-900 dark:text-white">
-                    Durée
+                    {t('step5.duree')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-4 text-left font-bold min-w-[150px] text-gray-900 dark:text-white">
-                    Lieu
+                    {t('step5.lieu')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-4 text-left font-bold min-w-[140px] text-gray-900 dark:text-white">
-                    Date début
+                    {t('step5.dateDebut')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-4 text-left font-bold min-w-[140px] text-gray-900 dark:text-white">
-                    Date fin
+                    {t('step5.dateFin')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-4 text-left font-bold min-w-[120px] text-gray-900 dark:text-white">
-                    Heures
+                    {t('step5.heures')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-4 text-left font-bold min-w-[180px] text-gray-900 dark:text-white">
-                    Détails
+                    {t('step5.details')}
                   </th>
                   <th className="p-4 w-16"></th>
                 </tr>
@@ -190,8 +193,9 @@ export default function Step5PlanFormation() {
                         type="text"
                         value={formation.formationName}
                         onChange={(e) => updateFormation(index, 'formationName', e.target.value)}
-                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-300"
-                        placeholder="Formation name"
+                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:border-transparent transition-colors duration-300"
+                        placeholder={t('step5.formation')}
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </td>
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
@@ -199,8 +203,9 @@ export default function Step5PlanFormation() {
                         type="text"
                         value={formation.formateur}
                         onChange={(e) => updateFormation(index, 'formateur', e.target.value)}
-                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-300"
-                        placeholder="Formateur"
+                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:border-transparent transition-colors duration-300"
+                        placeholder={t('step5.formateur')}
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </td>
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
@@ -208,8 +213,9 @@ export default function Step5PlanFormation() {
                         type="text"
                         value={formation.nombreJours}
                         onChange={(e) => updateFormation(index, 'nombreJours', e.target.value)}
-                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-center transition-colors duration-300"
+                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:border-transparent text-center transition-colors duration-300"
                         placeholder="3"
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </td>
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
@@ -217,8 +223,9 @@ export default function Step5PlanFormation() {
                         type="text"
                         value={formation.dureeFormation}
                         onChange={(e) => updateFormation(index, 'dureeFormation', e.target.value)}
-                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-center transition-colors duration-300"
+                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:border-transparent text-center transition-colors duration-300"
                         placeholder="24h"
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </td>
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
@@ -226,8 +233,9 @@ export default function Step5PlanFormation() {
                         type="text"
                         value={formation.lieuFormation}
                         onChange={(e) => updateFormation(index, 'lieuFormation', e.target.value)}
-                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-300"
-                        placeholder="Location"
+                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:border-transparent transition-colors duration-300"
+                        placeholder={t('step5.lieu')}
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </td>
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
@@ -235,7 +243,8 @@ export default function Step5PlanFormation() {
                         type="date"
                         value={formation.dateDebut}
                         onChange={(e) => updateFormation(index, 'dateDebut', e.target.value)}
-                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-300"
+                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:border-transparent transition-colors duration-300"
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </td>
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
@@ -243,7 +252,8 @@ export default function Step5PlanFormation() {
                         type="date"
                         value={formation.dateFin}
                         onChange={(e) => updateFormation(index, 'dateFin', e.target.value)}
-                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-300"
+                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:border-transparent transition-colors duration-300"
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </td>
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
@@ -251,8 +261,9 @@ export default function Step5PlanFormation() {
                         type="text"
                         value={formation.heuresFormation}
                         onChange={(e) => updateFormation(index, 'heuresFormation', e.target.value)}
-                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-center transition-colors duration-300"
+                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:border-transparent text-center transition-colors duration-300"
                         placeholder="9h - 17h"
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </td>
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
@@ -260,8 +271,9 @@ export default function Step5PlanFormation() {
                         type="text"
                         value={formation.details}
                         onChange={(e) => updateFormation(index, 'details', e.target.value)}
-                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-colors duration-300"
-                        placeholder="Contact details"
+                        className="w-full px-3 py-3 text-sm border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:border-transparent transition-colors duration-300"
+                        placeholder={t('step5.details')}
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </td>
                     <td className="p-3">
@@ -283,20 +295,21 @@ export default function Step5PlanFormation() {
 
         {/* Notes Section */}
         <div className="mb-8">
-          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Note :</h3>
+          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">{t('step5.note')}</h3>
           <textarea
             value={planData.notes || ''}
             onChange={(e) => updatePlanData({ notes: e.target.value })}
             rows="6"
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition-colors duration-300"
-            placeholder="Enter notes here..."
+            placeholder={t('step5.notePlaceholder') || "Enter notes here..."}
+            style={{ focusRingColor: ABBK_COLORS.red }}
           />
         </div>
 
         {/* Contact Note */}
         <div className="mb-8">
           <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-            Contact Note:
+            {t('step5.contactNote')}
           </label>
           <input
             type="text"
@@ -304,6 +317,7 @@ export default function Step5PlanFormation() {
             onChange={(e) => updatePlanData({ contactNote: e.target.value })}
             className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition-colors duration-300"
             placeholder="Notre contact à :"
+            style={{ focusRingColor: ABBK_COLORS.red }}
           />
         </div>
 
@@ -311,23 +325,24 @@ export default function Step5PlanFormation() {
         <div className="grid grid-cols-2 gap-8 pt-6 border-t-2 border-gray-300 dark:border-gray-600">
           <div>
             <label className="block text-sm font-bold text-gray-800 dark:text-white mb-3">
-              Date Le :
+              {t('step5.dateLe')}
             </label>
             <input
               type="date"
               value={planData.dateSignature}
               onChange={(e) => updatePlanData({ dateSignature: e.target.value })}
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition-colors duration-300"
+              style={{ focusRingColor: ABBK_COLORS.red }}
             />
             <div className="mt-8 pt-4 border-t-2 border-gray-300 dark:border-gray-600">
-              <p className="text-sm font-bold text-gray-800 dark:text-white mb-3">Signature</p>
+              <p className="text-sm font-bold text-gray-800 dark:text-white mb-3">{t('step5.signature')}</p>
               <div className="h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg bg-gray-50 dark:bg-gray-700/30"></div>
             </div>
           </div>
 
           <div>
             <div className="mt-14 pt-4 border-t-2 border-gray-300 dark:border-gray-600">
-              <p className="text-sm font-bold text-gray-800 dark:text-white mb-3">Signature ABBK PHYSICSWORKS</p>
+              <p className="text-sm font-bold text-gray-800 dark:text-white mb-3">{t('step5.signatureABBK')}</p>
               <div className="h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg bg-gray-50 dark:bg-gray-700/30"></div>
             </div>
           </div>

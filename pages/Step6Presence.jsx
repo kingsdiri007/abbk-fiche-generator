@@ -2,8 +2,10 @@ import React, { useEffect } from 'react';
 import { useFormContext } from '../context/FormContext';
 import { Plus, Trash2 } from 'lucide-react';
 import { ABBK_COLORS } from '../utils/theme';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Step6Presence() {
+  const { t } = useLanguage();
   const { formData, updateFormData } = useFormContext();
 
   // Auto-fill from previous data
@@ -135,19 +137,20 @@ export default function Step6Presence() {
           className="text-white p-6 rounded-lg mb-8 -mx-8 -mt-8"
           style={{ backgroundColor: ABBK_COLORS.red }}
         >
-          <h2 className="text-3xl font-bold text-center">FICHE DE PRÉSENCE</h2>
-          <p className="text-center text-sm mt-2 opacity-90">Step 6 of 7</p>
+          <h2 className="text-3xl font-bold text-center">{t('step6.title')}</h2>
+          <p className="text-center text-sm mt-2 opacity-90">{t('step6.step')}</p>
         </div>
 
         {/* Header Info */}
         <div className="grid grid-cols-2 gap-4 mb-6 p-4 border-2 border-gray-800 dark:border-gray-600">
           <div>
-            <label className="text-sm font-bold text-gray-900 dark:text-white">Entreprise :</label>
+            <label className="text-sm font-bold text-gray-900 dark:text-white">{t('step6.entreprise')}</label>
             <input
               type="text"
               value={presenceData.entreprise}
               onChange={(e) => updatePresenceData({ entreprise: e.target.value })}
               className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg mt-1 transition-colors duration-300"
+              style={{ focusRingColor: ABBK_COLORS.red }}
             />
           </div>
         </div>
@@ -155,7 +158,7 @@ export default function Step6Presence() {
         {/* Formation Details Grid */}
         <div className="grid grid-cols-3 gap-4 mb-6 text-sm border-2 border-gray-800 dark:border-gray-600 p-4">
           <div>
-            <label className="font-bold text-gray-900 dark:text-white">Thème de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">{t('step6.theme')}</label>
             <input
               type="text"
               value={presenceData.themeFormation}
@@ -164,7 +167,7 @@ export default function Step6Presence() {
             />
           </div>
           <div>
-            <label className="font-bold text-gray-900 dark:text-white">Période de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">{t('step6.periode')}</label>
             <div className="flex gap-2 mt-1">
               <input
                 type="date"
@@ -182,7 +185,7 @@ export default function Step6Presence() {
             </div>
           </div>
           <div>
-            <label className="font-bold text-gray-900 dark:text-white">Heure de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">{t('step6.heure')}</label>
             <div className="flex gap-2 mt-1">
               <input
                 type="text"
@@ -203,7 +206,7 @@ export default function Step6Presence() {
           </div>
 
           <div>
-            <label className="font-bold text-gray-900 dark:text-white">Cadre de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">{t('step6.cadre')}</label>
             <input
               type="text"
               value={presenceData.cadreFormation}
@@ -212,7 +215,7 @@ export default function Step6Presence() {
             />
           </div>
           <div>
-            <label className="font-bold text-gray-900 dark:text-white">Nombre de jours de formation (max 7) :</label>
+            <label className="font-bold text-gray-900 dark:text-white">{t('step6.nombreJours')}</label>
             <input
               type="number"
               min="1"
@@ -223,7 +226,7 @@ export default function Step6Presence() {
             />
           </div>
           <div>
-            <label className="font-bold text-gray-900 dark:text-white">Lieu de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">{t('step6.lieu')}</label>
             <input
               type="text"
               value={presenceData.lieuFormation}
@@ -233,7 +236,7 @@ export default function Step6Presence() {
           </div>
 
           <div>
-            <label className="font-bold text-gray-900 dark:text-white">Formateur :</label>
+            <label className="font-bold text-gray-900 dark:text-white">{t('step6.formateur')}</label>
             <input
               type="text"
               value={presenceData.formateur}
@@ -242,7 +245,7 @@ export default function Step6Presence() {
             />
           </div>
           <div>
-            <label className="font-bold text-gray-900 dark:text-white">Durée de la formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">{t('step6.duree')}</label>
             <input
               type="text"
               value={presenceData.dureeFormation}
@@ -251,7 +254,7 @@ export default function Step6Presence() {
             />
           </div>
           <div>
-            <label className="font-bold text-gray-900 dark:text-white">Mode de formation :</label>
+            <label className="font-bold text-gray-900 dark:text-white">{t('step6.mode')}</label>
             <input
               type="text"
               value={presenceData.modeFormation}
@@ -264,7 +267,7 @@ export default function Step6Presence() {
         {/* Participants Table */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Liste des participants</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{t('step6.participants')}</h3>
             <button
               onClick={addParticipant}
               className="flex items-center gap-2 px-4 py-2 text-white rounded-lg hover:shadow-md font-medium transition"
@@ -273,7 +276,7 @@ export default function Step6Presence() {
               onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
             >
               <Plus size={18} />
-              Add Participant
+              {t('step6.addParticipant')}
             </button>
           </div>
 
@@ -282,16 +285,16 @@ export default function Step6Presence() {
               <thead>
                 <tr className="bg-gray-200 dark:bg-gray-700 border-b-2 border-gray-800 dark:border-gray-600">
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-left font-bold min-w-[200px] text-gray-900 dark:text-white">
-                    Nom et Prénom
+                    {t('step6.nomPrenom')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-left font-bold min-w-[200px] text-gray-900 dark:text-white">
-                    Établissement / Entreprise
+                    {t('step6.etablissement')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-center font-bold text-gray-900 dark:text-white" colSpan={nombreJours}>
-                    Jours
+                    {t('step6.jours')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-left font-bold min-w-[150px] text-gray-900 dark:text-white">
-                    Détails
+                    {t('step6.details')}
                   </th>
                   <th className="p-3 w-16"></th>
                 </tr>
@@ -318,7 +321,7 @@ export default function Step6Presence() {
                         value={participant.nom}
                         onChange={(e) => updateParticipant(pIndex, 'nom', e.target.value)}
                         className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
-                        placeholder="Name"
+                        placeholder={t('step6.nomPrenom')}
                       />
                     </td>
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
@@ -327,7 +330,7 @@ export default function Step6Presence() {
                         value={participant.etablissement}
                         onChange={(e) => updateParticipant(pIndex, 'etablissement', e.target.value)}
                         className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
-                        placeholder="Company"
+                        placeholder={t('step6.etablissement')}
                       />
                     </td>
                     {Array.from({ length: nombreJours }).map((_, jIndex) => (
@@ -363,7 +366,7 @@ export default function Step6Presence() {
                 ))}
                 <tr className="bg-gray-100 dark:bg-gray-700 border-b-2 border-gray-800 dark:border-gray-600">
                   <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3 font-bold text-gray-900 dark:text-white" colSpan="2">
-                    Formateur: {presenceData.formateur}
+                    {t('step6.formateur')}: {presenceData.formateur}
                   </td>
                   {Array.from({ length: nombreJours }).map((_, idx) => (
                     <td key={idx} className="border-r-2 border-gray-800 dark:border-gray-600 p-2"></td>
@@ -378,36 +381,37 @@ export default function Step6Presence() {
 
         {/* Notes */}
         <div className="mb-6">
-          <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">Note :</h3>
+          <h3 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">{t('step6.note')}</h3>
           <textarea
             value={presenceData.notes}
             onChange={(e) => updatePresenceData({ notes: e.target.value })}
             rows="4"
             className="w-full px-4 py-3 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg transition-colors duration-300"
+            style={{ focusRingColor: ABBK_COLORS.red }}
           />
         </div>
 
         {/* Signatures */}
         <div className="grid grid-cols-2 gap-8 border-t-2 pt-6">
           <div>
-            <label className="font-bold mb-2 block text-gray-900 dark:text-white">Date Le :</label>
+            <label className="font-bold mb-2 block text-gray-900 dark:text-white">{t('step6.dateLe')}</label>
             <input
               type="date"
               value={presenceData.dateLe}
               onChange={(e) => updatePresenceData({ dateLe: e.target.value })}
               className="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg mb-4 transition-colors duration-300"
             />
-            <p className="font-bold mb-3 text-gray-900 dark:text-white">Signature</p>
+            <p className="font-bold mb-3 text-gray-900 dark:text-white">{t('step6.signature')}</p>
             <div className="h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg"></div>
           </div>
           <div>
-            <p className="font-bold mb-3 mt-10 text-gray-900 dark:text-white">Signature de Formateur</p>
+            <p className="font-bold mb-3 mt-10 text-gray-900 dark:text-white">{t('step6.signatureFormateur')}</p>
             <div className="h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg"></div>
           </div>
         </div>
 
         <div className="text-center mt-6">
-          <p className="text-sm font-bold text-gray-900 dark:text-white">Signature ABBK PHYSICSWORKS</p>
+          <p className="text-sm font-bold text-gray-900 dark:text-white">{t('step6.signatureABBK')}</p>
         </div>
       </div>
     </div>

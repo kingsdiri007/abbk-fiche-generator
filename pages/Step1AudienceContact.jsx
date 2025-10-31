@@ -6,7 +6,7 @@ import { ABBK_COLORS } from '../utils/theme';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Step1AudienceContact() {
-   const { t, language, toggleLanguage } = useLanguage();
+  const { t } = useLanguage();
   const { formData, updateFormData } = useFormContext();
   const [clients, setClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -20,12 +20,10 @@ export default function Step1AudienceContact() {
     matricule_fiscal: ''
   });
 
-  // Load clients from Supabase on mount
   useEffect(() => {
     loadClients();
   }, []);
 
-  // Filter clients when search term changes
   useEffect(() => {
     if (searchTerm) {
       handleSearch();
@@ -84,17 +82,14 @@ export default function Step1AudienceContact() {
 
   const handleAddClient = async () => {
     if (!newClient.name || !newClient.matricule_fiscal) {
-      alert('Please fill in Name and Matricule Fiscal');
+      alert(t('step1.fillRequired') || 'Please fill in Name and Matricule Fiscal');
       return;
     }
 
     try {
       const addedClient = await addClient(newClient);
-      
-      // Refresh client list
       await loadClients();
       
-      // Auto-select the new client
       updateFormData({
         selectedClientId: addedClient.id,
         clientName: addedClient.name,
@@ -104,10 +99,9 @@ export default function Step1AudienceContact() {
         matriculeFiscal: addedClient.matricule_fiscal
       });
 
-      // Reset form
       setNewClient({ name: '', address: '', phone: '', matricule_fiscal: '' });
       setShowAddClient(false);
-      alert('✅ Client added successfully!');
+      alert(t('step1.clientAdded') || '✅ Client added successfully!');
     } catch (error) {
       console.error('Error adding client:', error);
       alert('Error adding client: ' + error.message);
@@ -117,10 +111,10 @@ export default function Step1AudienceContact() {
   if (loading) {
     return (
       <div className="max-w-5xl mx-auto">
-        <div className="bg-white rounded-xl shadow-lg p-8 flex items-center justify-center" style={{ minHeight: '400px' }}>
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 flex items-center justify-center transition-colors duration-300" style={{ minHeight: '400px' }}>
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading clients...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: ABBK_COLORS.red }}></div>
+            <p className="text-gray-600 dark:text-gray-400">{t('step1.loading') || 'Loading clients...'}</p>
           </div>
         </div>
       </div>
@@ -128,112 +122,114 @@ export default function Step1AudienceContact() {
   }
 
   return (
-<div className="max-w-5xl mx-auto">
-  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
-    <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">CLIENT SELECTION</h2>
+    <div className="max-w-5xl mx-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">{t('step1.title')}</h2>
 
         <div className="grid grid-cols-12 gap-6">
           {/* Left Side - Actions */}
           <div className="col-span-4 space-y-4">
-            {/* Search by ID or Name */}
+            {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="text"
-                placeholder="Search by ID or Name..."
+                placeholder={t('step1.search')}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 transition-colors duration-300"
+                style={{ focusRingColor: ABBK_COLORS.red }}
               />
             </div>
 
             {/* Add Client Button */}
-           <button
-  onClick={() => setShowAddClient(!showAddClient)}
-  className="w-full flex items-center justify-center gap-2 p-4 text-white rounded-lg transition shadow-md"
-  style={{ backgroundColor: ABBK_COLORS.red }}
-  onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
-  onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
->
-  <Plus size={20} />
-  Add New Client
-</button>
+            <button
+              onClick={() => setShowAddClient(!showAddClient)}
+              className="w-full flex items-center justify-center gap-2 p-4 text-white rounded-lg transition shadow-md"
+              style={{ backgroundColor: ABBK_COLORS.red }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+              onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+            >
+              <Plus size={20} />
+              {t('step1.addClient')}
+            </button>
 
             {/* Add Client Form */}
             {showAddClient && (
-              <div className="bg-gray-50 p-4 rounded-lg border-2 border-green-200">
+              <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border-2 transition-colors duration-300" style={{ borderColor: ABBK_COLORS.red + '40' }}>
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-bold text-gray-800">New Client</h3>
+                  <h3 className="font-bold text-gray-800 dark:text-white">{t('step1.newClient')}</h3>
                   <button onClick={() => setShowAddClient(false)}>
-                    <X size={20} className="text-gray-400 hover:text-gray-600" />
+                    <X size={20} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
                   </button>
                 </div>
 
                 <div className="space-y-2">
                   <input
                     type="text"
-                    placeholder="Company Name *"
+                    placeholder={t('step1.companyName') + ' *'}
                     value={newClient.name}
                     onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm transition-colors duration-300"
                   />
                   <input
                     type="text"
-                    placeholder="Matricule Fiscal *"
+                    placeholder={t('step1.matriculeFiscal') + ' *'}
                     value={newClient.matricule_fiscal}
                     onChange={(e) => setNewClient({ ...newClient, matricule_fiscal: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm transition-colors duration-300"
                   />
                   <input
                     type="text"
-                    placeholder="Address"
+                    placeholder={t('step1.address')}
                     value={newClient.address}
                     onChange={(e) => setNewClient({ ...newClient, address: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm transition-colors duration-300"
                   />
                   <input
                     type="text"
-                    placeholder="Phone"
+                    placeholder={t('step1.phone')}
                     value={newClient.phone}
                     onChange={(e) => setNewClient({ ...newClient, phone: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm transition-colors duration-300"
                   />
-                <button
-  onClick={handleAddClient}
-  className="w-full px-4 py-2 text-white rounded-lg text-sm transition shadow-md"
-  style={{ backgroundColor: ABBK_COLORS.red }}
-  onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
-  onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
->
-  Add Client
-</button>
+                  <button
+                    onClick={handleAddClient}
+                    className="w-full px-4 py-2 text-white rounded-lg text-sm transition shadow-md"
+                    style={{ backgroundColor: ABBK_COLORS.red }}
+                    onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+                    onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+                  >
+                    {t('step1.addClient')}
+                  </button>
                 </div>
               </div>
             )}
 
             {searchTerm && (
-              <p className="text-sm text-gray-600">
-                Found {filteredClients.length} client(s)
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {filteredClients.length} {t('step1.clientsFound')}
               </p>
             )}
           </div>
 
           {/* Right Side - Contact Information */}
           <div className="col-span-8">
-            <h3 className="text-xl font-bold text-gray-400 mb-6">Contact Information</h3>
+            <h3 className="text-xl font-bold text-gray-400 dark:text-gray-500 mb-6">{t('step1.contactInfo')}</h3>
             
             <div className="space-y-4">
               {/* Client Dropdown */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Client: *
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  {t('step1.selectClient')} *
                 </label>
                 <select
                   value={formData.selectedClientId || ''}
                   onChange={handleClientSelect}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:border-transparent transition-colors duration-300"
+                  style={{ focusRingColor: ABBK_COLORS.red }}
                 >
-                  <option value="">-- Select a client --</option>
+                  <option value="">{t('step1.selectPlaceholder')}</option>
                   {filteredClients.map(client => (
                     <option key={client.id} value={client.id}>
                       {client.client_id} - {client.name}
@@ -241,71 +237,73 @@ export default function Step1AudienceContact() {
                   ))}
                 </select>
                 {filteredClients.length === 0 && searchTerm && (
-                  <p className="text-sm text-red-600 mt-1">No clients found matching: {searchTerm}</p>
+                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                    {t('step1.noClientsFound') || 'No clients found matching:'} {searchTerm}
+                  </p>
                 )}
               </div>
 
               {/* Auto-filled Contact Info */}
               {formData.selectedClientId && (
-                <div className="space-y-4 p-4 bg-blue-50 rounded-lg border-2 border-blue-200">
+                <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-700 transition-colors duration-300">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Client Name:
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('step1.clientName')}
                     </label>
                     <input
                       type="text"
                       value={formData.clientName}
                       readOnly
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700 font-semibold"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white font-semibold transition-colors duration-300"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Matricule Fiscal:
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('step1.matriculeFiscal')}
                     </label>
                     <input
                       type="text"
                       value={formData.matriculeFiscal}
                       readOnly
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white transition-colors duration-300"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Address:
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      {t('step1.address')}
                     </label>
                     <input
                       type="text"
                       value={formData.address}
                       readOnly
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white transition-colors duration-300"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Phone:
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('step1.phone')}
                       </label>
                       <input
                         type="tel"
                         value={formData.phone}
                         readOnly
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white transition-colors duration-300"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Client ID:
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('step1.clientId')}
                       </label>
                       <input
                         type="text"
                         value={formData.id}
                         readOnly
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700"
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white transition-colors duration-300"
                       />
                     </div>
                   </div>
@@ -313,11 +311,11 @@ export default function Step1AudienceContact() {
               )}
 
               {!formData.selectedClientId && (
-                <div className="flex items-center justify-center h-64 text-gray-400 border-2 border-dashed border-gray-300 rounded-lg">
+                <div className="flex items-center justify-center h-64 text-gray-400 dark:text-gray-500 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg transition-colors duration-300">
                   <div className="text-center">
-                    <Search size={48} className="mx-auto mb-4 text-gray-300" />
-                    <p className="text-lg mb-2">Select a client to continue</p>
-                    <p className="text-sm">Search by ID/Name or add a new client</p>
+                    <Search size={48} className="mx-auto mb-4 text-gray-300 dark:text-gray-600" />
+                    <p className="text-lg mb-2">{t('step1.selectToContinue')}</p>
+                    <p className="text-sm">{t('step1.searchOrAdd')}</p>
                   </div>
                 </div>
               )}
@@ -327,5 +325,4 @@ export default function Step1AudienceContact() {
       </div>
     </div>
   );
-  
 }

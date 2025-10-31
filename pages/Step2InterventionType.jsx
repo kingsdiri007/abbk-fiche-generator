@@ -4,8 +4,10 @@ import { useFormContext } from '../context/FormContext';
 import { getAllFormations, saveCustomFormation, checkIfAdmin } from '../services/supabaseService';
 import LicenseTable from '../components/LicenseTable';
 import { ABBK_COLORS } from '../utils/theme';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function Step2InterventionType() {
+  const { t } = useLanguage();
   const { formData, updateFormData, showToast } = useFormContext();
   const [formations, setFormations] = useState([]);
   const [activeFormation, setActiveFormation] = useState(null);
@@ -35,7 +37,7 @@ export default function Step2InterventionType() {
       setFormations(data);
     } catch (error) {
       console.error('Error loading formations:', error);
-      showToast?.('Error loading formations: ' + error.message, 'error');
+      showToast?.(t('error.loadingFormations') || 'Error loading formations: ' + error.message, 'error');
     } finally {
       setLoading(false);
     }
@@ -69,7 +71,7 @@ export default function Step2InterventionType() {
 
     if (isSelected) {
       if (hasUnsavedChanges && activeFormation === formation.formation_id) {
-        if (!window.confirm('You have unsaved changes. Continue without saving?')) {
+        if (!window.confirm(t('step2.unsavedWarning') || 'You have unsaved changes. Continue without saving?')) {
           return;
         }
       }
@@ -175,17 +177,17 @@ export default function Step2InterventionType() {
       setActiveFormation(newFormationId);
       setHasUnsavedChanges(false);
       setShowSaveModal(false);
-      showToast?.('Formation saved successfully!', 'success');
+      showToast?.(t('step2.formationSaved'), 'success');
     } catch (error) {
       console.error('Error saving formation:', error);
-      showToast?.('Error saving formation: ' + error.message, 'error');
+      showToast?.(t('error.savingFormation') || 'Error saving formation: ' + error.message, 'error');
     }
   };
 
   const handleSkipSave = () => {
     setHasUnsavedChanges(false);
     setShowSaveModal(false);
-    showToast?.('Changes discarded', 'info');
+    showToast?.(t('step2.changesDiscarded'), 'info');
   };
 
   const activeFormationData = activeFormation ? formData.formationsData[activeFormation] : null;
@@ -222,7 +224,7 @@ export default function Step2InterventionType() {
           } : {}}
         >
           <span className="text-3xl mb-2 block">📚</span>
-          <span className="text-2xl font-semibold">Formation</span>
+          <span className="text-2xl font-semibold">{t('step2.formations')}</span>
         </button>
 
         <button
@@ -238,14 +240,14 @@ export default function Step2InterventionType() {
           } : {}}
         >
           <span className="text-3xl mb-2 block">🔧</span>
-          <span className="text-2xl font-semibold">License</span>
+          <span className="text-2xl font-semibold">{t('step2.license')}</span>
         </button>
       </div>
 
       {/* License Mode */}
       {formData.interventionType === 'license' && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
-          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6">License Information</h3>
+          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6">{t('step2.licenseInfo')}</h3>
           <LicenseTable />
         </div>
       )}
@@ -256,22 +258,23 @@ export default function Step2InterventionType() {
           {/* Formation List */}
           <div className="col-span-3">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sticky top-4 transition-colors duration-300">
-              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">Formations</h3>
+              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">{t('step2.formations')}</h3>
               
               {/* Software Filter */}
               <select
                 value={softwareFilter}
                 onChange={(e) => setSoftwareFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm mb-4 transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm mb-4 transition-colors duration-300 focus:ring-2 focus:border-transparent"
+                style={{ focusRingColor: ABBK_COLORS.red }}
               >
                 {softwareList.map(software => (
                   <option key={software} value={software}>
-                    {software === 'all' ? 'All Software' : software}
+                    {software === 'all' ? t('step2.allSoftware') : software}
                   </option>
                 ))}
               </select>
 
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">Select one or more formations</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{t('step2.selectFormations')}</p>
               
               <div className="space-y-2 max-h-[600px] overflow-y-auto">
                 {filteredFormations.map((formation) => {
@@ -306,7 +309,7 @@ export default function Step2InterventionType() {
                           className="text-xs text-white px-2 py-1 rounded mt-2 inline-block"
                           style={{ backgroundColor: ABBK_COLORS.darkred }}
                         >
-                          Custom
+                          {t('step2.customFormation')}
                         </div>
                       )}
                     </button>
@@ -317,11 +320,11 @@ export default function Step2InterventionType() {
               {(formData.selectedFormations || []).length > 0 && (
                 <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
                   <p className="text-xs text-gray-600 dark:text-gray-400">
-                    {(formData.selectedFormations || []).length} formation(s) selected
+                    {(formData.selectedFormations || []).length} {t('step2.selected')}
                   </p>
                   {hasUnsavedChanges && (
                     <p className="text-xs mt-1" style={{ color: ABBK_COLORS.red }}>
-                      ⚠️ Unsaved changes
+                      {t('step2.unsavedChanges')}
                     </p>
                   )}
                 </div>
@@ -338,9 +341,9 @@ export default function Step2InterventionType() {
                   style={{ backgroundColor: ABBK_COLORS.red }}
                 >
                   <div>
-                    <h3 className="text-xl font-bold">{activeFormationObj?.name || 'Formation'}</h3>
+                    <h3 className="text-xl font-bold">{activeFormationObj?.name || t('step2.formations')}</h3>
                     <p className="text-sm opacity-90 mt-1">
-                      {isCustomFormation ? 'Custom formation - All fields editable' : 'Template - You can modify and save as new'}
+                      {isCustomFormation ? t('step2.editAllFields') : t('step2.templateModify')}
                     </p>
                   </div>
                   <div className="flex gap-2">
@@ -351,7 +354,7 @@ export default function Step2InterventionType() {
                         style={{ color: ABBK_COLORS.red }}
                       >
                         <Save size={18} />
-                        Save
+                        {t('common.save')}
                       </button>
                     )}
                     <Edit2 size={24} className="opacity-75" />
@@ -363,7 +366,7 @@ export default function Step2InterventionType() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Nom de formation: *
+                        {t('step2.formationName')} *
                         {!isAdmin && !isCustomFormation && <Lock size={14} className="inline ml-1 text-gray-400" />}
                       </label>
                       <input
@@ -371,15 +374,16 @@ export default function Step2InterventionType() {
                         value={activeFormationData.formationName}
                         onChange={(e) => updateFormationData(activeFormation, 'formationName', e.target.value)}
                         disabled={!isAdmin && !isCustomFormation}
-                        className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:border-transparent ${
                           !isAdmin && !isCustomFormation ? 'cursor-not-allowed opacity-60' : ''
                         }`}
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Référence: *
+                        {t('step2.reference')} *
                         {!isAdmin && !isCustomFormation && <Lock size={14} className="inline ml-1 text-gray-400" />}
                       </label>
                       <input
@@ -387,9 +391,10 @@ export default function Step2InterventionType() {
                         value={activeFormationData.formationRef}
                         onChange={(e) => updateFormationData(activeFormation, 'formationRef', e.target.value)}
                         disabled={!isAdmin && !isCustomFormation}
-                        className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent ${
+                        className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:border-transparent ${
                           !isAdmin && !isCustomFormation ? 'cursor-not-allowed opacity-60' : ''
                         }`}
+                        style={{ focusRingColor: ABBK_COLORS.red }}
                       />
                     </div>
                   </div>
@@ -397,37 +402,40 @@ export default function Step2InterventionType() {
                   {/* Additional Fields */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Prérequis:
+                      {t('step2.prerequisites')}
                     </label>
                     <textarea
                       value={activeFormationData.prerequisites}
                       onChange={(e) => updateFormationData(activeFormation, 'prerequisites', e.target.value)}
                       rows="3"
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:border-transparent"
+                      style={{ focusRingColor: ABBK_COLORS.red }}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Objectifs visés:
+                      {t('step2.objectives')}
                     </label>
                     <textarea
                       value={activeFormationData.objectives}
                       onChange={(e) => updateFormationData(activeFormation, 'objectives', e.target.value)}
                       rows="3"
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:border-transparent"
+                      style={{ focusRingColor: ABBK_COLORS.red }}
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Compétences acquises:
+                      {t('step2.competencies')}
                     </label>
                     <textarea
                       value={activeFormationData.competencies}
                       onChange={(e) => updateFormationData(activeFormation, 'competencies', e.target.value)}
                       rows="3"
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:border-transparent"
+                      style={{ focusRingColor: ABBK_COLORS.red }}
                     />
                   </div>
 
@@ -435,7 +443,7 @@ export default function Step2InterventionType() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Programme de Formation:
+                        {t('step2.schedule')}
                       </label>
                       <button
                         onClick={addScheduleDay}
@@ -445,7 +453,7 @@ export default function Step2InterventionType() {
                         onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
                       >
                         <Plus size={14} />
-                        Add Day
+                        {t('step2.addDay')}
                       </button>
                     </div>
 
@@ -453,11 +461,11 @@ export default function Step2InterventionType() {
                       <table className="w-full text-xs">
                         <thead className="bg-gray-100 dark:bg-gray-700">
                           <tr>
-                            <th className="px-2 py-2 text-left font-semibold w-12 text-gray-900 dark:text-white">Jours</th>
-                            <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">Contenu / Concepts</th>
-                            <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">Méthodes</th>
-                            <th className="px-2 py-2 text-center font-semibold w-16 text-gray-900 dark:text-white">Théorie</th>
-                            <th className="px-2 py-2 text-center font-semibold w-16 text-gray-900 dark:text-white">Pratique</th>
+                            <th className="px-2 py-2 text-left font-semibold w-12 text-gray-900 dark:text-white">{t('step4.days')}</th>
+                            <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">{t('step4.content')}</th>
+                            <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">{t('step4.methods')}</th>
+                            <th className="px-2 py-2 text-center font-semibold w-16 text-gray-900 dark:text-white">{t('step4.theory')}</th>
+                            <th className="px-2 py-2 text-center font-semibold w-16 text-gray-900 dark:text-white">{t('step4.practice')}</th>
                             <th className="px-2 py-2 w-8"></th>
                           </tr>
                         </thead>
@@ -478,7 +486,7 @@ export default function Step2InterventionType() {
                                   onChange={(e) => updateScheduleDay(index, 'content', e.target.value)}
                                   className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
                                   rows="3"
-                                  placeholder="Content"
+                                  placeholder={t('step4.content')}
                                 />
                               </td>
                               <td className="px-2 py-2">
@@ -487,7 +495,7 @@ export default function Step2InterventionType() {
                                   onChange={(e) => updateScheduleDay(index, 'methods', e.target.value)}
                                   className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
                                   rows="3"
-                                  placeholder="Methods"
+                                  placeholder={t('step4.methods')}
                                 />
                               </td>
                               <td className="px-2 py-2">
@@ -528,7 +536,7 @@ export default function Step2InterventionType() {
                     <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg mt-3 transition-colors duration-300">
                       <div className="flex justify-between text-xs">
                         <div>
-                          <span className="font-semibold text-gray-900 dark:text-white">Théorie: </span>
+                          <span className="font-semibold text-gray-900 dark:text-white">{t('step4.theory')}: </span>
                           <span className="text-gray-700 dark:text-gray-300">
                             {(activeFormationData.schedule || []).reduce((sum, day) => {
                               const hours = day.theoryHours === '-' ? 0 : (parseFloat(day.theoryHours) || 0);
@@ -537,7 +545,7 @@ export default function Step2InterventionType() {
                           </span>
                         </div>
                         <div>
-                          <span className="font-semibold text-gray-900 dark:text-white">Pratique: </span>
+                          <span className="font-semibold text-gray-900 dark:text-white">{t('step4.practice')}: </span>
                           <span className="text-gray-700 dark:text-gray-300">
                             {(activeFormationData.schedule || []).reduce((sum, day) => {
                               const hours = day.practiceHours === '-' ? 0 : (parseFloat(day.practiceHours) || 0);
@@ -546,7 +554,7 @@ export default function Step2InterventionType() {
                           </span>
                         </div>
                         <div>
-                          <span className="font-semibold text-gray-900 dark:text-white">Total: </span>
+                          <span className="font-semibold text-gray-900 dark:text-white">{t('step4.total')}: </span>
                           <span className="font-bold text-gray-900 dark:text-white">
                             {(activeFormationData.schedule || []).reduce((sum, day) => {
                               const theory = day.theoryHours === '-' ? 0 : (parseFloat(day.theoryHours) || 0);
@@ -562,8 +570,8 @@ export default function Step2InterventionType() {
               </div>
             ) : (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center transition-colors duration-300">
-                <p className="text-xl text-gray-400 dark:text-gray-500 mb-2">Select a formation to view and edit details</p>
-                <p className="text-sm text-gray-500 dark:text-gray-600">All fields are pre-filled but can be modified</p>
+                <p className="text-xl text-gray-400 dark:text-gray-500 mb-2">{t('step2.selectToView') || 'Select a formation to view and edit details'}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-600">{t('step2.fieldsPreFilled') || 'All fields are pre-filled but can be modified'}</p>
               </div>
             )}
           </div>
@@ -572,8 +580,8 @@ export default function Step2InterventionType() {
 
       {!formData.interventionType && (
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center transition-colors duration-300">
-          <p className="text-xl text-gray-400 dark:text-gray-500">Select intervention type</p>
-          <p className="text-sm text-gray-500 dark:text-gray-600 mt-2">Formation or License</p>
+          <p className="text-xl text-gray-400 dark:text-gray-500">{t('step2.selectType')}</p>
+          <p className="text-sm text-gray-500 dark:text-gray-600 mt-2">{t('step2.formationOrLicense') || 'Formation or License'}</p>
         </div>
       )}
 
@@ -581,9 +589,9 @@ export default function Step2InterventionType() {
       {showSaveModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transition-colors duration-300">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">Save Formation Changes?</h3>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('step2.saveChanges')}</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              You have modified this formation. What would you like to do?
+              {t('step2.saveMessage')}
             </p>
 
             <div className="space-y-3">
@@ -595,7 +603,7 @@ export default function Step2InterventionType() {
                 onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
               >
                 <Save size={20} />
-                Save as New Formation
+                {t('step2.saveAsNew')}
               </button>
 
               <button
@@ -603,19 +611,19 @@ export default function Step2InterventionType() {
                 className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition"
               >
                 <SkipForward size={20} />
-                Use Without Saving
+                {t('step2.useWithoutSaving')}
               </button>
 
               <button
                 onClick={() => setShowSaveModal(false)}
                 className="w-full px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium transition"
               >
-                Cancel
+                {t('common.cancel')}
               </button>
             </div>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-              * Saving creates a new custom formation with your modifications
+              {t('step2.saveNote')}
             </p>
           </div>
         </div>
