@@ -122,13 +122,15 @@ export default function Step1AudienceContact() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
-        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">{t('step1.title')}</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">Client & Intervention Details</h2>
 
         <div className="grid grid-cols-12 gap-6">
-          {/* Left Side - Actions */}
+          {/* Left Side - Client Selection */}
           <div className="col-span-4 space-y-4">
+            <h3 className="text-lg font-bold text-gray-700 dark:text-gray-300">Select Client</h3>
+            
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -213,7 +215,7 @@ export default function Step1AudienceContact() {
             )}
           </div>
 
-          {/* Right Side - Contact Information */}
+          {/* Right Side - Client Info + Intervention Details */}
           <div className="col-span-8">
             <h3 className="text-xl font-bold text-gray-400 dark:text-gray-500 mb-6">{t('step1.contactInfo')}</h3>
             
@@ -236,78 +238,152 @@ export default function Step1AudienceContact() {
                     </option>
                   ))}
                 </select>
-                {filteredClients.length === 0 && searchTerm && (
-                  <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                    {t('step1.noClientsFound') || 'No clients found matching:'} {searchTerm}
-                  </p>
-                )}
               </div>
 
               {/* Auto-filled Contact Info */}
               {formData.selectedClientId && (
-                <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-700 transition-colors duration-300">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('step1.clientName')}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.clientName}
-                      readOnly
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white font-semibold transition-colors duration-300"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('step1.matriculeFiscal')}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.matriculeFiscal}
-                      readOnly
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white transition-colors duration-300"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('step1.address')}
-                    </label>
-                    <input
-                      type="text"
-                      value={formData.address}
-                      readOnly
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white transition-colors duration-300"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
+                <>
+                  <div className="space-y-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border-2 border-blue-200 dark:border-blue-700 transition-colors duration-300">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('step1.phone')}
-                      </label>
-                      <input
-                        type="tel"
-                        value={formData.phone}
-                        readOnly
-                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white transition-colors duration-300"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('step1.clientId')}
+                        {t('step1.clientName')}
                       </label>
                       <input
                         type="text"
-                        value={formData.id}
+                        value={formData.clientName}
+                        readOnly
+                        className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white font-semibold transition-colors duration-300"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        {t('step1.address')}
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.address}
                         readOnly
                         className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white transition-colors duration-300"
                       />
                     </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('step1.phone')}
+                        </label>
+                        <input
+                          type="tel"
+                          value={formData.phone}
+                          readOnly
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white transition-colors duration-300"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          {t('step1.matriculeFiscal')}
+                        </label>
+                        <input
+                          type="text"
+                          value={formData.matriculeFiscal}
+                          readOnly
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-700 dark:text-white transition-colors duration-300"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
+
+                  {/* Intervention Details Section */}
+                  <div className="mt-8 pt-6 border-t-2 border-gray-200 dark:border-gray-700">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Intervention Details</h3>
+                    
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Reference BC *
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="Reference BC"
+                            value={formData.referenceBC}
+                            onChange={(e) => updateFormData({ referenceBC: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition-colors duration-300"
+                            style={{ focusRingColor: ABBK_COLORS.red }}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Date *
+                          </label>
+                          <input
+                            type="date"
+                            value={formData.interventionDate}
+                            onChange={(e) => updateFormData({ interventionDate: e.target.value })}
+                            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition-colors duration-300"
+                            style={{ focusRingColor: ABBK_COLORS.red }}
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Location (Fait à) *
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g., Ariana, Tunis"
+                          value={formData.location}
+                          onChange={(e) => updateFormData({ location: e.target.value })}
+                          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 transition-colors duration-300"
+                          style={{ focusRingColor: ABBK_COLORS.red }}
+                        />
+                      </div>
+
+                      {/* Intervention Type Selection */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+                          Intervention Type *
+                        </label>
+                        <div className="grid grid-cols-2 gap-4">
+                          <button
+                            onClick={() => updateFormData({ interventionType: 'formation' })}
+                            className={`p-6 rounded-xl text-center transition-all shadow ${
+                              formData.interventionType === 'formation'
+                                ? 'text-white scale-105'
+                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                            }`}
+                            style={formData.interventionType === 'formation' ? { 
+                              backgroundColor: ABBK_COLORS.red,
+                              boxShadow: `0 10px 15px -3px ${ABBK_COLORS.red}40`
+                            } : {}}
+                          >
+                            <span className="text-3xl mb-2 block">📚</span>
+                            <span className="text-lg font-semibold">Formation</span>
+                          </button>
+
+                          <button
+                            onClick={() => updateFormData({ interventionType: 'license' })}
+                            className={`p-6 rounded-xl text-center transition-all shadow ${
+                              formData.interventionType === 'license'
+                                ? 'text-white scale-105'
+                                : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
+                            }`}
+                            style={formData.interventionType === 'license' ? { 
+                              backgroundColor: ABBK_COLORS.darkred,
+                              boxShadow: `0 10px 15px -3px ${ABBK_COLORS.darkred}40`
+                            } : {}}
+                          >
+                            <span className="text-3xl mb-2 block">🔧</span>
+                            <span className="text-lg font-semibold">License</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
 
               {!formData.selectedClientId && (

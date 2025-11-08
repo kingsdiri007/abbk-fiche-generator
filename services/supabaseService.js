@@ -323,6 +323,73 @@ export const deleteLicense = async (id) => {
   
   if (error) throw error;
 };
+
+// ============================================
+// INTERVENANTS
+// ============================================
+
+export const getAllIntervenants = async () => {
+  const { data, error } = await supabase
+    .from('intervenants')
+    .select('*')
+    .eq('is_active', true)
+    .order('name', { ascending: true });
+  
+  if (error) throw error;
+  return data;
+};
+
+export const getIntervenantById = async (id) => {
+  const { data, error } = await supabase
+    .from('intervenants')
+    .select('*')
+    .eq('id', id)
+    .single();
+  
+  if (error) throw error;
+  return data;
+};
+
+export const addIntervenant = async (intervenantData) => {
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  const { data, error } = await supabase
+    .from('intervenants')
+    .insert([{
+      ...intervenantData,
+      created_by: user?.id
+    }])
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+};
+
+export const updateIntervenant = async (id, intervenantData) => {
+  const { data, error } = await supabase
+    .from('intervenants')
+    .update(intervenantData)
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+};
+
+export const deleteIntervenant = async (id) => {
+  // Soft delete - set is_active to false
+  const { data, error } = await supabase
+    .from('intervenants')
+    .update({ is_active: false })
+    .eq('id', id)
+    .select()
+    .single();
+  
+  if (error) throw error;
+  return data;
+};
 // ============================================
 // PDF MANAGEMENT - Extended
 // ============================================

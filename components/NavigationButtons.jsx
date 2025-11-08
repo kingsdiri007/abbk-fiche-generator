@@ -5,89 +5,83 @@ import { useLanguage } from '../context/LanguageContext';
 import { ABBK_COLORS } from '../utils/theme';
 import { downloadPDF, getPDFBlob } from '../utils/PdfGenerator';
 import { uploadPDFToPack, createFormationPack } from '../services/supabaseService';
-import { validateStep1, validateStep2, validateStep3, validateAllSteps } from '../utils/validation';
 import { useNavigate } from 'react-router-dom';
 import ErrorList from './ErrorList';
 
-export default function NavigationButtons({ totalSteps = 4 }) {
+export default function NavigationButtons({ totalSteps = 3 }) {
   const { currentStep, goNext, goBack, formData, showToast, resetForm, setCurrentStep, updateFormData } = useFormContext();
   const { t } = useLanguage();
   const [isGenerating, setIsGenerating] = useState(false);
   const [errors, setErrors] = useState([]);
   const [showPackModal, setShowPackModal] = useState(false);
-  const [currentPackId, setCurrentPackId] = useState(null);
   const [modalStep, setModalStep] = useState('programme');
   const navigate = useNavigate();
 
   const validateCurrentStep = () => {
-    let validation;
+    const stepErrors = [];
     
     switch (currentStep) {
       case 1:
-        validation = validateStep1(formData);
+        if (!formData.selectedClientId) stepErrors.push('Please select a client');
+        if (!formData.referenceBC) stepErrors.push('Please enter Reference BC');
+        if (!formData.interventionDate) stepErrors.push('Please select intervention date');
+        if (!formData.location) stepErrors.push('Please enter location');
+        if (!formData.interventionType) stepErrors.push('Please select intervention type (Formation or License)');
         break;
       case 2:
-        validation = validateStep2(formData);
+        if (formData.interventionType === 'formation') {
+          if (!formData.selectedFormations || formData.selectedFormations.length === 0) {
+            stepErrors.push('Please select at least one formation');
+          }
+        } else if (formData.interventionType === 'license') {
+          if (!formData.intervenant) stepErrors.push('Please select an intervenant for license installation');
+          const validLicenses = formData.licenses.filter(lic => lic.name && lic.quantity);
+          if (validLicenses.length === 0) stepErrors.push('Please add at least one license');
+        }
         break;
       case 3:
-        validation = validateStep3(formData);
+        // Preview - all validation done
         break;
       case 4:
-        validation = validateAllSteps(formData);
+        if (!formData.planData?.formations?.[0]?.formationName) {
+          stepErrors.push('Please fill in at least one formation name');
+        }
         break;
       case 5:
-        const planErrors = [];
-        if (!formData.planData?.formations?.[0]?.formationName) {
-          planErrors.push(t('error.fillFormationName') || 'Please fill in at least one formation name');
+        if (!formData.presenceData?.participants?.[0]?.nom) {
+          stepErrors.push('Please add at least one participant');
         }
-        validation = { isValid: planErrors.length === 0, errors: planErrors };
         break;
       case 6:
-        const presenceErrors = [];
-        if (!formData.presenceData?.participants?.[0]?.nom) {
-          presenceErrors.push(t('error.addParticipant') || 'Please add at least one participant');
-        }
-        validation = { isValid: presenceErrors.length === 0, errors: presenceErrors };
-        break;
-      case 7:
-        const evaluationErrors = [];
         if (!formData.evaluationData?.evaluations?.[0]) {
-          evaluationErrors.push(t('error.evaluationMissing') || 'Evaluation data is missing');
+          stepErrors.push('Evaluation data is missing');
         }
-        validation = { isValid: evaluationErrors.length === 0, errors: evaluationErrors };
         break;
-      default:
-        validation = { isValid: true, errors: [] };
     }
 
-    setErrors(validation.errors);
-    return validation.isValid;
+    setErrors(stepErrors);
+    return stepErrors.length === 0;
   };
 
   const handleNext = () => {
     if (validateCurrentStep()) {
       setErrors([]);
       goNext();
-      showToast?.(t('common.success') || 'Step completed successfully!', 'success');
+      showToast?.('Step completed successfully!', 'success');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } else {
-      showToast?.(t('error.fixErrors'), 'error');
+      showToast?.('Please fix the errors before continuing', 'error');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
 
   const handleGeneratePDF = async () => {
-    const validation = validateAllSteps(formData);
-    
-    if (!validation.isValid) {
-      setErrors(validation.errors);
-      showToast?.(t('error.fillRequired'), 'error');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (!validateCurrentStep()) {
+      showToast?.('Please complete all required fields', 'error');
       return;
     }
 
     setIsGenerating(true);
-    setErrors([]);
     
     try {
       await new Promise(resolve => setTimeout(resolve, 500));
@@ -107,7 +101,6 @@ export default function NavigationButtons({ totalSteps = 4 }) {
         };
         
         const pack = await createFormationPack(packData);
-        setCurrentPackId(pack.id);
         
         await uploadPDFToPack(
           pdfFile,
@@ -144,7 +137,7 @@ export default function NavigationButtons({ totalSteps = 4 }) {
 
   const handleGeneratePlanPDF = async () => {
     if (!validateCurrentStep()) {
-      showToast?.(t('error.fillRequired'), 'error');
+      showToast?.('Please complete all required fields', 'error');
       return;
     }
 
@@ -184,7 +177,7 @@ export default function NavigationButtons({ totalSteps = 4 }) {
 
   const handleGeneratePresencePDF = async () => {
     if (!validateCurrentStep()) {
-      showToast?.(t('error.fillRequired'), 'error');
+      showToast?.('Please complete all required fields', 'error');
       return;
     }
 
@@ -224,7 +217,7 @@ export default function NavigationButtons({ totalSteps = 4 }) {
 
   const handleGenerateEvaluationPDF = async () => {
     if (!validateCurrentStep()) {
-      showToast?.(t('error.fillRequired'), 'error');
+      showToast?.('Please complete all required fields', 'error');
       return;
     }
 
@@ -270,13 +263,13 @@ export default function NavigationButtons({ totalSteps = 4 }) {
     
     if (modalStep === 'programme') {
       showToast?.('Moving to Fiche Plan de Formation...', 'info');
-      setCurrentStep?.(5);
+      setCurrentStep?.(4);
     } else if (modalStep === 'plan') {
       showToast?.('Moving to Fiche de Présence...', 'info');
-      setCurrentStep?.(6);
+      setCurrentStep?.(5);
     } else if (modalStep === 'presence') {
       showToast?.('Moving to Fiche d\'Évaluation...', 'info');
-      setCurrentStep?.(7);
+      setCurrentStep?.(6);
     }
     
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -303,9 +296,9 @@ export default function NavigationButtons({ totalSteps = 4 }) {
     return '';
   };
 
+  const isStep4 = currentStep === 4;
   const isStep5 = currentStep === 5;
   const isStep6 = currentStep === 6;
-  const isStep7 = currentStep === 7;
   const isLastMainStep = currentStep === totalSteps;
 
   return (
@@ -319,10 +312,10 @@ export default function NavigationButtons({ totalSteps = 4 }) {
           className="flex items-center gap-2 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg font-medium hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           <ChevronLeft size={20} />
-          {t('nav.back')}
+          Back
         </button>
 
-        {isStep7 ? (
+        {isStep6 ? (
           <button
             onClick={handleGenerateEvaluationPDF}
             disabled={isGenerating}
@@ -334,9 +327,9 @@ export default function NavigationButtons({ totalSteps = 4 }) {
             onMouseLeave={(e) => !isGenerating && (e.target.style.backgroundColor = ABBK_COLORS.red)}
           >
             <Download size={20} />
-            {isGenerating ? t('nav.completingPack') : t('nav.completePack')}
+            {isGenerating ? 'Completing Pack...' : 'Complete Formation Pack'}
           </button>
-        ) : isStep6 ? (
+        ) : isStep5 ? (
           <button
             onClick={handleGeneratePresencePDF}
             disabled={isGenerating}
@@ -344,9 +337,9 @@ export default function NavigationButtons({ totalSteps = 4 }) {
             style={{ backgroundColor: '#10b981' }}
           >
             <Download size={20} />
-            {isGenerating ? t('nav.generating') : t('nav.generateFichePresence')}
+            {isGenerating ? 'Generating...' : 'Generate Fiche Présence'}
           </button>
-        ) : isStep5 ? (
+        ) : isStep4 ? (
           <button
             onClick={handleGeneratePlanPDF}
             disabled={isGenerating}
@@ -354,7 +347,7 @@ export default function NavigationButtons({ totalSteps = 4 }) {
             style={{ backgroundColor: '#9333ea' }}
           >
             <Download size={20} />
-            {isGenerating ? t('nav.generatingPlan') : t('nav.generateFichePlan')}
+            {isGenerating ? 'Generating...' : 'Generate Fiche Plan'}
           </button>
         ) : isLastMainStep ? (
           <button
@@ -364,7 +357,7 @@ export default function NavigationButtons({ totalSteps = 4 }) {
             style={{ backgroundColor: '#10b981' }}
           >
             <Download size={20} />
-            {isGenerating ? t('nav.generating') : t('nav.downloadPdf')}
+            {isGenerating ? 'Generating...' : 'Download PDF'}
           </button>
         ) : (
           <button
@@ -374,7 +367,7 @@ export default function NavigationButtons({ totalSteps = 4 }) {
             onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
             onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
           >
-            {t('nav.next')}
+            Next
             <ChevronRight size={20} />
           </button>
         )}
@@ -384,7 +377,7 @@ export default function NavigationButtons({ totalSteps = 4 }) {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-lg w-full p-8 relative animate-fade-in">
             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4 text-center">
-              {getModalTitle()} {t('common.generated')}! ✅
+              {getModalTitle()} Generated! ✅
             </h2>
             
             <div className="space-y-3 mb-6">
@@ -395,19 +388,19 @@ export default function NavigationButtons({ totalSteps = 4 }) {
                 onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
                 onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
               >
-                {t('nav.continueTo')} {getNextStepName()}
+                Continue to {getNextStepName()}
               </button>
 
               <button
                 onClick={handleSaveAndFinish}
                 className="w-full px-6 py-4 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition"
               >
-                {t('nav.saveFinish')}
+                Save & Finish Later
               </button>
             </div>
 
             <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
-              {t('nav.continueFromSaved')}
+              You can continue this pack from the Saved page
             </p>
           </div>
         </div>

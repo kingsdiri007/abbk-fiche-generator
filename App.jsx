@@ -15,25 +15,31 @@ import Step7Evaluation from './pages/Step7Evaluation';
 
 import Step1AudienceContact from './pages/Step1AudienceContact';
 import Step2InterventionType from './pages/Step2InterventionType';
-import Step3CommonDetails from './pages/Step3CommonDetails';
 import Step4Preview from './pages/Step4Preview';
 
 function CreateFiche() {
   const { currentStep } = useFormContext();
 
+  // New Step Mapping:
+  // Step 1: Client + Details + Type Selection
+  // Step 2: Formation OR License (based on Step 1 choice)
+  // Step 3: Preview (was Step 4)
+  // Step 4: Plan Formation (was Step 5) - only for formation
+  // Step 5: Presence (was Step 6) - only for formation
+  // Step 6: Evaluation (was Step 7) - only for formation
+
   return (
     <>
-      <ProgressBar totalSteps={4} />
+      <ProgressBar totalSteps={3} />
       <main className="max-w-7xl mx-auto px-6 py-8">
         {currentStep === 1 && <Step1AudienceContact />}
         {currentStep === 2 && <Step2InterventionType />}
-        {currentStep === 3 && <Step3CommonDetails />}
-        {currentStep === 4 && <Step4Preview />}
-        {currentStep === 5 && <Step5PlanFormation />}
-        {currentStep === 6 && <Step6Presence />}
-        {currentStep === 7 && <Step7Evaluation />}
+        {currentStep === 3 && <Step4Preview />}
+        {currentStep === 4 && <Step5PlanFormation />}
+        {currentStep === 5 && <Step6Presence />}
+        {currentStep === 6 && <Step7Evaluation />}
 
-        <NavigationButtons totalSteps={4} />
+        <NavigationButtons totalSteps={3} />
       </main>
     </>
   );

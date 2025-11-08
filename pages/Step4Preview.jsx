@@ -104,48 +104,52 @@ export default function Step4Preview() {
                   </tbody>
                 </table>
 
-                {/* Schedule Table */}
-                <table className="w-full border-2 border-gray-800 dark:border-gray-600 mb-3 text-xs">
-                  <thead>
-                    <tr className="bg-gray-100 dark:bg-gray-700">
-                      <th className="border border-gray-800 dark:border-gray-600 p-2 font-bold w-12 text-gray-900 dark:text-white">{t('step4.days')}</th>
-                      <th className="border border-gray-800 dark:border-gray-600 p-2 font-bold text-left text-gray-900 dark:text-white">{t('step4.content')}</th>
-                      <th className="border border-gray-800 dark:border-gray-600 p-2 font-bold text-left text-gray-900 dark:text-white">{t('step4.methods')}</th>
-                      <th className="border border-gray-800 dark:border-gray-600 p-2 font-bold text-center text-gray-900 dark:text-white" colSpan="2">
-                        {t('step4.duration')}
-                      </th>
-                    </tr>
-                    <tr className="bg-gray-100 dark:bg-gray-700">
-                      <th className="border border-gray-800 dark:border-gray-600"></th>
-                      <th className="border border-gray-800 dark:border-gray-600"></th>
-                      <th className="border border-gray-800 dark:border-gray-600"></th>
-                      <th className="border border-gray-800 dark:border-gray-600 p-1 font-bold text-center w-16 text-gray-900 dark:text-white">{t('step4.theory')}</th>
-                      <th className="border border-gray-800 dark:border-gray-600 p-1 font-bold text-center w-16 text-gray-900 dark:text-white">{t('step4.practice')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(formationData.schedule || []).map((day, idx) => (
-                      <tr key={idx}>
-                        <td className="border border-gray-800 dark:border-gray-600 p-2 text-center font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
-                          {day.day}
-                        </td>
-                        <td className="border border-gray-800 dark:border-gray-600 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
-                          {day.content}
-                        </td>
-                        <td className="border border-gray-800 dark:border-gray-600 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
-                          {day.methods}
-                        </td>
-                        <td className="border border-gray-800 dark:border-gray-600 p-2 text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
-                          {day.theoryHours}
-                        </td>
-                        <td className="border border-gray-800 dark:border-gray-600 p-2 text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
-                          {day.practiceHours}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-
+{/* Schedule Table */}
+<table className="w-full border-2 border-gray-800 dark:border-gray-600 mb-3 text-xs">
+  <thead>
+    <tr className="bg-gray-100 dark:bg-gray-700">
+      <th className="border border-gray-800 dark:border-gray-600 p-2 font-bold w-12 text-gray-900 dark:text-white">{t('step4.days')}</th>
+      <th className="border border-gray-800 dark:border-gray-600 p-2 font-bold text-left text-gray-900 dark:text-white">{t('step4.content')}</th>
+      <th className="border border-gray-800 dark:border-gray-600 p-2 font-bold text-left text-gray-900 dark:text-white">{t('step4.methods')}</th>
+      <th className="border border-gray-800 dark:border-gray-600 p-2 font-bold text-left w-24 text-gray-900 dark:text-white">Intervenant</th>
+      <th className="border border-gray-800 dark:border-gray-600 p-2 font-bold text-center text-gray-900 dark:text-white" colSpan="2">
+        {t('step4.duration')}
+      </th>
+    </tr>
+    <tr className="bg-gray-100 dark:bg-gray-700">
+      <th className="border border-gray-800 dark:border-gray-600"></th>
+      <th className="border border-gray-800 dark:border-gray-600"></th>
+      <th className="border border-gray-800 dark:border-gray-600"></th>
+      <th className="border border-gray-800 dark:border-gray-600"></th>
+      <th className="border border-gray-800 dark:border-gray-600 p-1 font-bold text-center w-16 text-gray-900 dark:text-white">{t('step4.theory')}</th>
+      <th className="border border-gray-800 dark:border-gray-600 p-1 font-bold text-center w-16 text-gray-900 dark:text-white">{t('step4.practice')}</th>
+    </tr>
+  </thead>
+  <tbody>
+    {(formationData.schedule || []).map((day, idx) => (
+      <tr key={idx}>
+        <td className="border border-gray-800 dark:border-gray-600 p-2 text-center font-semibold bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+          {day.day}
+        </td>
+        <td className="border border-gray-800 dark:border-gray-600 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+          {day.content}
+        </td>
+        <td className="border border-gray-800 dark:border-gray-600 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+          {day.methods}
+        </td>
+        <td className="border border-gray-800 dark:border-gray-600 p-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+          {day.intervenant || '-'}
+        </td>
+        <td className="border border-gray-800 dark:border-gray-600 p-2 text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+          {day.theoryHours}
+        </td>
+        <td className="border border-gray-800 dark:border-gray-600 p-2 text-center bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200">
+          {day.practiceHours}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
                 {/* Total Hours */}
                 <p className="text-xs font-bold mb-2 text-gray-900 dark:text-gray-200">
                   {t('step4.totalTheory')} {totalTheory}h | {t('step4.totalPractice')} {totalPractice}h | {t('step4.total')} {totalTheory + totalPractice}h

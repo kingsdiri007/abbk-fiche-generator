@@ -30,10 +30,11 @@ export const MOCK_LICENSES = [
   'AutoCAD Professional'
 ];
 
-export const MOCK_INTERVENANTS = [
-  'Anouar Daoud',
-  'Ahmed Hammouda',
-];
+// REMOVED - Now loaded from Supabase
+// export const MOCK_INTERVENANTS = [
+//   'Anouar Daoud',
+//   'Ahmed Hammouda',
+// ];
 
 // Helper function to generate nature of intervention text
 export function generateInterventionNature(licenses, clientName) {

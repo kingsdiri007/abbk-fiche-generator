@@ -188,87 +188,93 @@ export function generatePDF(formData) {
       
       y += contentHeight + 15;
 
-      // Schedule Table
-      if (formationData.schedule && formationData.schedule.length > 0) {
-        const tableStartY = y;
-        const tableWidth = pageWidth - 2 * margin;
-        const rowHeight = 25;
+  
+// Schedule Table
+if (formationData.schedule && formationData.schedule.length > 0) {
+  const tableStartY = y;
+  const tableWidth = pageWidth - 2 * margin;
+  const rowHeight = 25;
 
-        const colJour = margin;
-        const colContenu = margin + 50;
-        const colMethodes = margin + 250;
-        const colTheorie = margin + 400;
-        const colPratique = margin + 480;
-        
-        // Table header - GRAY background
-        doc.setFillColor(220, 220, 220); // Gray background
-        doc.rect(margin, tableStartY, tableWidth, rowHeight, 'F');
-        doc.rect(margin, tableStartY, tableWidth, rowHeight, 'S');
+  const colJour = margin;
+  const colContenu = margin + 50;
+  const colMethodes = margin + 230;
+  const colIntervenant = margin + 360; // NEW COLUMN
+  const colTheorie = margin + 480;
+  const colPratique = margin + 540;
+  
+  // Table header - GRAY background
+  doc.setFillColor(220, 220, 220);
+  doc.rect(margin, tableStartY, tableWidth, rowHeight, 'F');
+  doc.rect(margin, tableStartY, tableWidth, rowHeight, 'S');
 
-        doc.setFontSize(8);
-        doc.setFont(undefined, 'bold');
-        doc.setTextColor(0, 0, 0); // Black text
-        doc.text('Jours', colJour + 5, tableStartY + 16);
-        doc.text('Contenu / Concepts', colContenu + 5, tableStartY + 16);
-        doc.text('Méthodes', colMethodes + 5, tableStartY + 16);
-        doc.text('Durée (H)', colTheorie + 5, tableStartY + 12);
-        doc.text('Théorie', colTheorie + 5, tableStartY + 22);
-        doc.text('Pratique', colPratique + 5, tableStartY + 22);
+  doc.setFontSize(8);
+  doc.setFont(undefined, 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text('Jours', colJour + 5, tableStartY + 16);
+  doc.text('Contenu / Concepts', colContenu + 5, tableStartY + 16);
+  doc.text('Méthodes', colMethodes + 5, tableStartY + 16);
+  doc.text('Intervenant', colIntervenant + 5, tableStartY + 16); // NEW HEADER
+  doc.text('Durée (H)', colTheorie + 5, tableStartY + 12);
+  doc.text('Théorie', colTheorie + 5, tableStartY + 22);
+  doc.text('Pratique', colPratique + 5, tableStartY + 22);
 
-        doc.line(colContenu, tableStartY, colContenu, tableStartY + rowHeight);
-        doc.line(colMethodes, tableStartY, colMethodes, tableStartY + rowHeight);
-        doc.line(colTheorie, tableStartY, colTheorie, tableStartY + rowHeight);
-        doc.line(colPratique, tableStartY, colPratique, tableStartY + rowHeight);
+  doc.line(colContenu, tableStartY, colContenu, tableStartY + rowHeight);
+  doc.line(colMethodes, tableStartY, colMethodes, tableStartY + rowHeight);
+  doc.line(colIntervenant, tableStartY, colIntervenant, tableStartY + rowHeight); // NEW LINE
+  doc.line(colTheorie, tableStartY, colTheorie, tableStartY + rowHeight);
+  doc.line(colPratique, tableStartY, colPratique, tableStartY + rowHeight);
 
-        y = tableStartY + rowHeight;
+  y = tableStartY + rowHeight;
 
-        doc.setFont(undefined, 'normal');
-        formationData.schedule.forEach((day) => {
-          const contentLines = doc.splitTextToSize(day.content || '', 190);
-          const methodLines = doc.splitTextToSize(day.methods || '', 140);
-          const dynamicRowHeight = Math.max(
-            rowHeight,
-            Math.max(contentLines.length, methodLines.length) * 10 + 10
-          );
-          
-          if (y + dynamicRowHeight > pageHeight - 100) {
-            doc.addPage();
-            y = margin;
-          }
-          
-          doc.rect(margin, y, tableWidth, dynamicRowHeight, 'S');
-          doc.line(colContenu, y, colContenu, y + dynamicRowHeight);
-          doc.line(colMethodes, y, colMethodes, y + dynamicRowHeight);
-          doc.line(colTheorie, y, colTheorie, y + dynamicRowHeight);
-          doc.line(colPratique, y, colPratique, y + dynamicRowHeight);
+  doc.setFont(undefined, 'normal');
+  formationData.schedule.forEach((day) => {
+    const contentLines = doc.splitTextToSize(day.content || '', 170);
+    const methodLines = doc.splitTextToSize(day.methods || '', 120);
+    const intervenantLines = doc.splitTextToSize(day.intervenant || '', 110); // NEW
+    const dynamicRowHeight = Math.max(
+      rowHeight,
+      Math.max(contentLines.length, methodLines.length, intervenantLines.length) * 10 + 10
+    );
+    
+    if (y + dynamicRowHeight > pageHeight - 100) {
+      doc.addPage();
+      y = margin;
+    }
+    
+    doc.rect(margin, y, tableWidth, dynamicRowHeight, 'S');
+    doc.line(colContenu, y, colContenu, y + dynamicRowHeight);
+    doc.line(colMethodes, y, colMethodes, y + dynamicRowHeight);
+    doc.line(colIntervenant, y, colIntervenant, y + dynamicRowHeight); // NEW LINE
+    doc.line(colTheorie, y, colTheorie, y + dynamicRowHeight);
+    doc.line(colPratique, y, colPratique, y + dynamicRowHeight);
 
-          doc.text(day.day || '', colJour + 5, y + 16);
-          doc.text(contentLines.slice(0, 5), colContenu + 5, y + 12);
-          doc.text(methodLines.slice(0, 5), colMethodes + 5, y + 12);
-          doc.text((day.theoryHours || '').toString(), colTheorie + 15, y + 16);
-          doc.text((day.practiceHours || '').toString(), colPratique + 15, y + 16);
+    doc.text(day.day || '', colJour + 5, y + 16);
+    doc.text(contentLines.slice(0, 5), colContenu + 5, y + 12);
+    doc.text(methodLines.slice(0, 5), colMethodes + 5, y + 12);
+    doc.text(intervenantLines.slice(0, 5), colIntervenant + 5, y + 12); // NEW TEXT
+    doc.text((day.theoryHours || '').toString(), colTheorie + 15, y + 16);
+    doc.text((day.practiceHours || '').toString(), colPratique + 15, y + 16);
 
-          y += dynamicRowHeight;
-        });
+    y += dynamicRowHeight;
+  });
 
-        y += 10;
+  y += 10;
 
-        // Total hours - BLACK
-        const totalTheory = formationData.schedule.reduce((sum, day) => 
-          sum + (parseFloat(day.theoryHours) || 0), 0
-        );
-        const totalPractice = formationData.schedule.reduce((sum, day) => 
-          sum + (parseFloat(day.practiceHours) || 0), 0
-        );
-        
-        doc.setFont(undefined, 'bold');
-        doc.setFontSize(9);
-        doc.setTextColor(0, 0, 0); // Black text
-        doc.text(`Total Théorie: ${totalTheory}h | Total Pratique: ${totalPractice}h | Total: ${totalTheory + totalPractice}h`, 
-          margin, y);
-        y += 25;
-      }
-
+  // Total hours - BLACK
+  const totalTheory = formationData.schedule.reduce((sum, day) => 
+    sum + (parseFloat(day.theoryHours) || 0), 0
+  );
+  const totalPractice = formationData.schedule.reduce((sum, day) => 
+    sum + (parseFloat(day.practiceHours) || 0), 0
+  );
+  
+  doc.setFont(undefined, 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(0, 0, 0);
+  doc.text(`Total Théorie: ${totalTheory}h | Total Pratique: ${totalPractice}h | Total: ${totalTheory + totalPractice}h`, 
+    margin, y);
+  y += 25;
+}
       if (formationIndex < formData.selectedFormations.length - 1) {
         y += 10;
         doc.setDrawColor(200, 200, 200);

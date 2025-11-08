@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Save, SkipForward, Lock } from 'lucide-react';
 import { useFormContext } from '../context/FormContext';
-import { getAllFormations, saveCustomFormation, checkIfAdmin } from '../services/supabaseService';
+import { getAllFormations, saveCustomFormation, checkIfAdmin, getAllIntervenants } from '../services/supabaseService';
 import LicenseTable from '../components/LicenseTable';
 import { ABBK_COLORS } from '../utils/theme';
 import { useLanguage } from '../context/LanguageContext';
@@ -10,6 +10,7 @@ export default function Step2InterventionType() {
   const { t } = useLanguage();
   const { formData, updateFormData, showToast } = useFormContext();
   const [formations, setFormations] = useState([]);
+  const [intervenants, setIntervenants] = useState([]);
   const [activeFormation, setActiveFormation] = useState(null);
   const [softwareFilter, setSoftwareFilter] = useState('all');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -19,6 +20,7 @@ export default function Step2InterventionType() {
 
   useEffect(() => {
     loadFormations();
+    loadIntervenants();
     checkAdminStatus();
   }, []);
 
@@ -43,6 +45,16 @@ export default function Step2InterventionType() {
     }
   };
 
+  const loadIntervenants = async () => {
+    try {
+      const data = await getAllIntervenants();
+      setIntervenants(data);
+    } catch (error) {
+      console.error('Error loading intervenants:', error);
+      showToast?.('Error loading intervenants: ' + error.message, 'error');
+    }
+  };
+
   const checkAdminStatus = async () => {
     try {
       const admin = await checkIfAdmin();
@@ -51,6 +63,9 @@ export default function Step2InterventionType() {
       console.error('Error checking admin:', error);
     }
   };
+
+ 
+
 
   const softwareList = ['all', ...new Set(formations.map(f => f.software))];
 
@@ -124,7 +139,14 @@ export default function Step2InterventionType() {
     const formationData = formData.formationsData[activeFormation];
     const newSchedule = [
       ...(formationData.schedule || []),
-      { day: `J${(formationData.schedule || []).length + 1}`, content: '', methods: '', theoryHours: '', practiceHours: '' }
+      { 
+        day: `J${(formationData.schedule || []).length + 1}`, 
+        content: '', 
+        methods: '', 
+        theoryHours: '', 
+        practiceHours: '',
+        intervenant: '' // NEW FIELD
+      }
     ];
     updateFormationData(activeFormation, 'schedule', newSchedule);
   };
@@ -209,40 +231,7 @@ export default function Step2InterventionType() {
 
   return (
     <div className="space-y-6">
-      {/* Intervention Type Selection */}
-      <div className="grid grid-cols-2 gap-6">
-        <button
-          onClick={() => updateFormData({ interventionType: 'formation' })}
-          className={`p-8 rounded-xl text-center transition-all shadow ${
-            formData.interventionType === 'formation'
-              ? 'text-white scale-105'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-          }`}
-          style={formData.interventionType === 'formation' ? { 
-            backgroundColor: ABBK_COLORS.red,
-            boxShadow: `0 10px 15px -3px ${ABBK_COLORS.red}40`
-          } : {}}
-        >
-          <span className="text-3xl mb-2 block">📚</span>
-          <span className="text-2xl font-semibold">{t('step2.formations')}</span>
-        </button>
-
-        <button
-          onClick={() => updateFormData({ interventionType: 'license' })}
-          className={`p-8 rounded-xl text-center transition-all shadow ${
-            formData.interventionType === 'license'
-              ? 'text-white scale-105'
-              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
-          }`}
-          style={formData.interventionType === 'license' ? { 
-            backgroundColor: ABBK_COLORS.darkred,
-            boxShadow: `0 10px 15px -3px ${ABBK_COLORS.darkred}40`
-          } : {}}
-        >
-          <span className="text-3xl mb-2 block">🔧</span>
-          <span className="text-2xl font-semibold">{t('step2.license')}</span>
-        </button>
-      </div>
+      
 
       {/* License Mode */}
       {formData.interventionType === 'license' && (
@@ -439,23 +428,27 @@ export default function Step2InterventionType() {
                     />
                   </div>
 
-                  {/* Schedule Table */}
+                  {/* Schedule Table with Intervenant Column */}
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                         {t('step2.schedule')}
                       </label>
-                      <button
-                        onClick={addScheduleDay}
-                        className="flex items-center gap-2 px-3 py-1.5 text-white rounded-lg text-xs hover:shadow-md transition"
-                        style={{ backgroundColor: ABBK_COLORS.red }}
-                        onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
-                        onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
-                      >
-                        <Plus size={14} />
-                        {t('step2.addDay')}
-                      </button>
+                      <div className="flex gap-2">
+                      
+                        <button
+                          onClick={addScheduleDay}
+                          className="flex items-center gap-2 px-3 py-1.5 text-white rounded-lg text-xs hover:shadow-md transition"
+                          style={{ backgroundColor: ABBK_COLORS.red }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+                        >
+                          <Plus size={14} />
+                          {t('step2.addDay')}
+                        </button>
+                      </div>
                     </div>
+
 
                     <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
                       <table className="w-full text-xs">
@@ -466,6 +459,7 @@ export default function Step2InterventionType() {
                             <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">{t('step4.methods')}</th>
                             <th className="px-2 py-2 text-center font-semibold w-16 text-gray-900 dark:text-white">{t('step4.theory')}</th>
                             <th className="px-2 py-2 text-center font-semibold w-16 text-gray-900 dark:text-white">{t('step4.practice')}</th>
+                            <th className="px-2 py-2 text-left font-semibold w-32 text-gray-900 dark:text-white">Intervenant</th>
                             <th className="px-2 py-2 w-8"></th>
                           </tr>
                         </thead>
@@ -515,6 +509,20 @@ export default function Step2InterventionType() {
                                   className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
                                   placeholder="0h"
                                 />
+                              </td>
+                              <td className="px-2 py-2">
+                                <select
+                                  value={day.intervenant || ''}
+                                  onChange={(e) => updateScheduleDay(index, 'intervenant', e.target.value)}
+                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
+                                >
+                                  <option value="">-- Select --</option>
+                                  {intervenants.map((intervenant) => (
+                                    <option key={intervenant.id} value={intervenant.name}>
+                                      {intervenant.name}
+                                    </option>
+                                  ))}
+                                </select>
                               </td>
                               <td className="px-2 py-2">
                                 {(activeFormationData.schedule || []).length > 1 && (

@@ -1,13 +1,32 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useFormContext } from '../context/FormContext';
-import { MOCK_INTERVENANTS, generateInterventionNature } from '../utils/mockData';
+import { generateInterventionNature } from '../utils/mockData';
+import { getAllIntervenants } from '../services/supabaseService';
 import { ABBK_COLORS } from '../utils/theme';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Step3CommonDetails() {
   const { t } = useLanguage();
   const { formData, updateFormData } = useFormContext();
+  const [intervenants, setIntervenants] = useState([]);
+  const [loading, setLoading] = useState(true);
   const isLicenseMode = formData.interventionType === 'license';
+
+  useEffect(() => {
+    loadIntervenants();
+  }, []);
+
+  const loadIntervenants = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllIntervenants();
+      setIntervenants(data);
+    } catch (error) {
+      console.error('Error loading intervenants:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Auto-fill nature and observations ONLY for license mode
   useEffect(() => {
@@ -25,6 +44,17 @@ export default function Step3CommonDetails() {
       });
     }
   }, [formData.licenses, formData.clientName, isLicenseMode]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <div 
+          className="animate-spin rounded-full h-8 w-8 border-b-2"
+          style={{ borderColor: ABBK_COLORS.red }}
+        ></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
@@ -96,7 +126,7 @@ export default function Step3CommonDetails() {
           </div>
         </div>
 
-        {/* Intervenant Dropdown */}
+        {/* Intervenant Dropdown - Now from Supabase */}
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             {t('step3.intervenant')}
@@ -108,12 +138,15 @@ export default function Step3CommonDetails() {
             style={{ focusRingColor: ABBK_COLORS.red }}
           >
             <option value="">{t('step3.selectIntervenant')}</option>
-            {MOCK_INTERVENANTS.map((intervenant) => (
-              <option key={intervenant} value={intervenant}>
-                {intervenant}
+            {intervenants.map((intervenant) => (
+              <option key={intervenant.id} value={intervenant.name}>
+                {intervenant.name}
               </option>
             ))}
           </select>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Main intervenant (individual days can have different intervenants in Step 2)
+          </p>
         </div>
 
         <div>
