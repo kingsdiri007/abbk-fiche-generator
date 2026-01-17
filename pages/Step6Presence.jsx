@@ -1,18 +1,43 @@
-import React, { useEffect } from 'react';
+// Step6Presence.jsx
+import React, { useEffect, useState } from 'react';
 import { useFormContext } from '../context/FormContext';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, X, Search } from 'lucide-react';
 import { ABBK_COLORS } from '../utils/theme';
 import { useLanguage } from '../context/LanguageContext';
+import { getAllStudents, searchStudents, addStudent } from '../services/supabaseService';
 
 export default function Step6Presence() {
   const { t } = useLanguage();
   const { formData, updateFormData } = useFormContext();
+  const [students, setStudents] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredStudents, setFilteredStudents] = useState([]);
+  const [showAddStudent, setShowAddStudent] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [newStudent, setNewStudent] = useState({
+    name: '',
+    etablissement: ''
+  });
+
+  // Load students on mount
+  useEffect(() => {
+    loadStudents();
+  }, []);
+
+  // Filter students based on search
+  useEffect(() => {
+    if (searchTerm) {
+      handleSearch();
+    } else {
+      setFilteredStudents(students);
+    }
+  }, [searchTerm, students]);
 
   // Auto-fill from previous data
   useEffect(() => {
     if (!formData.presenceData) {
       const planFormation = formData.planData?.formations?.[0] || {};
-      const nombreJours = Math.min(parseInt(planFormation.nombreJours || '2'), 7); // Max 7 days
+      const nombreJours = Math.min(parseInt(planFormation.nombreJours || '2'), 7);
       
       updateFormData({
         presenceData: {
@@ -29,7 +54,13 @@ export default function Step6Presence() {
           heureDebut: '9h',
           heureFin: '17h',
           participants: [
-            { nom: '', etablissement: '', jours: Array(nombreJours).fill(''), details: '' }
+            { 
+              nom: '', 
+              etablissement: '', 
+              jours: Array(nombreJours).fill(''), 
+              details: '',
+              studentId: null
+            }
           ],
           formateurSignature: '',
           notes: "* La fiche de présence doit être soigneusement complétée par ....... ABBK et le formateur. Deux copies sont nécessaires : une pour .... et une pour ABBK.\n* Une fiche de présence sur la plateforme ABBK L'inscription doit également être remplie.",
@@ -38,6 +69,62 @@ export default function Step6Presence() {
       });
     }
   }, [formData.planData, formData.clientName, formData.intervenant, formData.location, formData.interventionDate]);
+
+  const loadStudents = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllStudents();
+      setStudents(data);
+      setFilteredStudents(data);
+    } catch (error) {
+      console.error('Error loading students:', error);
+      alert('Error loading students: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    try {
+      const results = await searchStudents(searchTerm);
+      setFilteredStudents(results);
+    } catch (error) {
+      console.error('Error searching:', error);
+    }
+  };
+
+  const handleAddStudent = async () => {
+    if (!newStudent.name || !newStudent.etablissement) {
+      alert('Please fill in Name and Établissement');
+      return;
+    }
+
+    try {
+      const addedStudent = await addStudent(newStudent);
+      await loadStudents();
+      
+      setNewStudent({ name: '', etablissement: '' });
+      setShowAddStudent(false);
+      alert('✓ Student added successfully!');
+    } catch (error) {
+      console.error('Error adding student:', error);
+      alert('Error adding student: ' + error.message);
+    }
+  };
+
+  const handleStudentSelect = (participantIndex, studentId) => {
+    const student = students.find(s => s.id === studentId);
+    if (student) {
+      const newParticipants = [...presenceData.participants];
+      newParticipants[participantIndex] = {
+        ...newParticipants[participantIndex],
+        nom: student.name,
+        etablissement: student.etablissement,
+        studentId: student.id
+      };
+      updatePresenceData({ participants: newParticipants });
+    }
+  };
 
   const presenceData = formData.presenceData || {
     entreprise: '',
@@ -53,7 +140,7 @@ export default function Step6Presence() {
     heureDebut: '9h',
     heureFin: '17h',
     participants: [
-      { nom: '', etablissement: '', jours: ['', ''], details: '' }
+      { nom: '', etablissement: '', jours: ['', ''], details: '', studentId: null }
     ],
     formateurSignature: '',
     notes: '',
@@ -69,9 +156,8 @@ export default function Step6Presence() {
     });
   };
 
-  // Update participants array when number of days changes
   const handleNombreJoursChange = (newNombreJours) => {
-    const numDays = Math.min(Math.max(parseInt(newNombreJours) || 2, 1), 7); // Min 1, Max 7
+    const numDays = Math.min(Math.max(parseInt(newNombreJours) || 2, 1), 7);
     const updatedParticipants = presenceData.participants.map(p => ({
       ...p,
       jours: Array(numDays).fill('').map((_, i) => p.jours[i] || '')
@@ -88,7 +174,7 @@ export default function Step6Presence() {
     updatePresenceData({
       participants: [
         ...presenceData.participants,
-        { nom: '', etablissement: '', jours: Array(nombreJours).fill(''), details: '' }
+        { nom: '', etablissement: '', jours: Array(nombreJours).fill(''), details: '', studentId: null }
       ]
     });
   };
@@ -112,7 +198,14 @@ export default function Step6Presence() {
     updatePresenceData({ participants: newParticipants });
   };
 
-  // Get dates for columns
+  const toggleParticipantJour = (pIndex, jIndex) => {
+    const newParticipants = [...presenceData.participants];
+    const currentValue = newParticipants[pIndex].jours[jIndex];
+    // Toggle between '✓' and empty string
+    newParticipants[pIndex].jours[jIndex] = currentValue === '✓' ? '' : '✓';
+    updatePresenceData({ participants: newParticipants });
+  };
+
   const getDates = () => {
     const nombreJours = parseInt(presenceData.nombreJours) || 2;
     const dates = [];
@@ -121,7 +214,11 @@ export default function Step6Presence() {
       for (let i = 0; i < nombreJours; i++) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + i);
-        dates.push(date.toISOString().split('T')[0]);
+        // Format date as DD/MM/YYYY
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        dates.push(`${day}/${month}/${year}`);
       }
     }
     return dates;
@@ -129,6 +226,19 @@ export default function Step6Presence() {
 
   const dates = getDates();
   const nombreJours = parseInt(presenceData.nombreJours) || 2;
+
+  if (loading) {
+    return (
+      <div className="max-w-[95%] mx-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 flex items-center justify-center transition-colors duration-300" style={{ minHeight: '400px' }}>
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 mx-auto mb-4" style={{ borderColor: ABBK_COLORS.red }}></div>
+            <p className="text-gray-600 dark:text-gray-400">Loading students...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-[95%] mx-auto">
@@ -264,6 +374,81 @@ export default function Step6Presence() {
           </div>
         </div>
 
+        {/* Add Student Section - LIKE CLIENT SELECTION */}
+        <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-lg transition-colors duration-300">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white"></h3>
+            <button
+              onClick={() => setShowAddStudent(!showAddStudent)}
+              className="flex items-center gap-2 px-4 py-2 text-white rounded-lg transition shadow-md"
+              style={{ backgroundColor: ABBK_COLORS.red }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+              onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+            >
+              <Plus size={18} />
+              Add New Student
+            </button>
+          </div>
+
+          {/* Search Students */}
+          <div className="mb-3">
+            <div className="relative">
+              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search students..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg transition-colors duration-300"
+              />
+            </div>
+          </div>
+
+          {/* Add Student Form */}
+          {showAddStudent && (
+            <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border-2 transition-colors duration-300 mb-3" style={{ borderColor: ABBK_COLORS.red + '40' }}>
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="font-bold text-gray-800 dark:text-white">New Student</h3>
+                <button onClick={() => setShowAddStudent(false)}>
+                  <X size={20} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  placeholder="Student Name *"
+                  value={newStudent.name}
+                  onChange={(e) => setNewStudent({ ...newStudent, name: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm transition-colors duration-300"
+                />
+                <input
+                  type="text"
+                  placeholder="Établissement *"
+                  value={newStudent.etablissement}
+                  onChange={(e) => setNewStudent({ ...newStudent, etablissement: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg text-sm transition-colors duration-300"
+                />
+                <button
+                  onClick={handleAddStudent}
+                  className="w-full px-4 py-2 text-white rounded-lg text-sm transition shadow-md"
+                  style={{ backgroundColor: ABBK_COLORS.red }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
+                >
+                  Add Student
+                </button>
+              </div>
+            </div>
+          )}
+
+          {searchTerm && (
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              {filteredStudents.length} student(s) found
+            </p>
+          )}
+        </div>
+
         {/* Participants Table */}
         <div className="mb-6">
           <div className="flex items-center justify-between mb-4">
@@ -284,7 +469,7 @@ export default function Step6Presence() {
             <table className="w-full text-sm border-collapse">
               <thead>
                 <tr className="bg-gray-200 dark:bg-gray-700 border-b-2 border-gray-800 dark:border-gray-600">
-                  <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-left font-bold min-w-[200px] text-gray-900 dark:text-white">
+                  <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-left font-bold min-w-[250px] text-gray-900 dark:text-white">
                     {t('step6.nomPrenom')}
                   </th>
                   <th className="border-r-2 border-gray-800 dark:border-gray-600 p-3 text-left font-bold min-w-[200px] text-gray-900 dark:text-white">
@@ -316,13 +501,37 @@ export default function Step6Presence() {
                 {presenceData.participants.map((participant, pIndex) => (
                   <tr key={pIndex} className="border-b-2 border-gray-800 dark:border-gray-600">
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
-                      <input
-                        type="text"
-                        value={participant.nom}
-                        onChange={(e) => updateParticipant(pIndex, 'nom', e.target.value)}
+                      {/* SIMPLE DROPDOWN - LIKE CLIENT SELECTION */}
+                      <select
+                        value={participant.studentId || ''}
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            handleStudentSelect(pIndex, e.target.value);
+                          } else {
+                            updateParticipant(pIndex, 'nom', '');
+                            updateParticipant(pIndex, 'etablissement', '');
+                            updateParticipant(pIndex, 'studentId', null);
+                          }
+                        }}
                         className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
-                        placeholder={t('step6.nomPrenom')}
-                      />
+                      >
+                        <option value="">-- Select Student or Type Below --</option>
+                        {filteredStudents.map(student => (
+                          <option key={student.id} value={student.id}>
+                            {student.name} 
+                          </option>
+                        ))}
+                      </select>
+                      {/* Manual input if not selecting from dropdown */}
+                      {!participant.studentId && (
+                        <input
+                          type="text"
+                          value={participant.nom}
+                          onChange={(e) => updateParticipant(pIndex, 'nom', e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded mt-2 transition-colors duration-300"
+                          placeholder="Or type name manually"
+                        />
+                      )}
                     </td>
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">
                       <input
@@ -331,17 +540,24 @@ export default function Step6Presence() {
                         onChange={(e) => updateParticipant(pIndex, 'etablissement', e.target.value)}
                         className="w-full px-3 py-2 border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
                         placeholder={t('step6.etablissement')}
+                        readOnly={!!participant.studentId}
                       />
                     </td>
                     {Array.from({ length: nombreJours }).map((_, jIndex) => (
                       <td key={jIndex} className="border-r-2 border-gray-800 dark:border-gray-600 p-2">
-                        <input
-                          type="text"
-                          value={participant.jours[jIndex] || ''}
-                          onChange={(e) => updateParticipantJour(pIndex, jIndex, e.target.value)}
-                          className="w-full px-2 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
-                          placeholder="✓"
-                        />
+                        <div className="flex justify-center">
+                          <label className="flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={participant.jours[jIndex] === '✓'}
+                              onChange={() => toggleParticipantJour(pIndex, jIndex)}
+                              className="w-5 h-5 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                            />
+                            <span className="ml-2 text-sm text-gray-900 dark:text-white">
+                              {participant.jours[jIndex] === '✓' ? 'Présent' : 'Absent'}
+                            </span>
+                          </label>
+                        </div>
                       </td>
                     ))}
                     <td className="border-r-2 border-gray-800 dark:border-gray-600 p-3">

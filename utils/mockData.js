@@ -13,33 +13,9 @@ export const initializeClients = async () => {
   }
 };
 
-export const MOCK_LICENSES = [
-  'SOLIDWORKS Standard',
-  'SOLIDWORKS Premium',
-  'SOLIDWORKS Professional',
-  'SOLIDWORKS Standard with Cloud Services',
-  'SOLIDWORKS PDM Standard',
-  'SOLIDWORKS Simulation Standard',
-  'SOLIDWORKS Electrical Standard',
-  '3DEXPERIENCE SOLIDWORKS',
-  'ABAQUS Standard',
-  'ABAQUS CAE',
-  'MasterCAM Mill',
-  'MasterCAM Lathe',
-  'AutoCAD LT',
-  'AutoCAD Professional'
-];
-
-// REMOVED - Now loaded from Supabase
-// export const MOCK_INTERVENANTS = [
-//   'Anouar Daoud',
-//   'Ahmed Hammouda',
-// ];
 
 // Helper function to generate nature of intervention text
 export function generateInterventionNature(licenses, clientName) {
-  if (!licenses || licenses.length === 0) return '';
-
   const licenseGroups = {};
   licenses.forEach(license => {
     if (license.name) {
@@ -51,10 +27,10 @@ export function generateInterventionNature(licenses, clientName) {
   });
 
   const parts = Object.entries(licenseGroups).map(([name, quantity]) => 
-    `Installation de ${quantity} licence${quantity > 1 ? 's' : ''} ${name}`
+     `${quantity} licence${quantity > 1 ? 's' : ''} ${name}`
   );
 
-  return parts.join(' et ') + ` pour la Société ${clientName || ''}`;
+  return `Installation de `+parts.join(' et ') + ` pour la Société ${clientName || ''}`;
 }
 
 // Add new client (now uses Supabase)

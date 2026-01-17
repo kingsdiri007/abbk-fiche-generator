@@ -1,13 +1,15 @@
+// This is a large file - Part 1: Main structure with responsive layout
 import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Save, SkipForward, Lock } from 'lucide-react';
 import { useFormContext } from '../context/FormContext';
 import { getAllFormations, saveCustomFormation, checkIfAdmin, getAllIntervenants } from '../services/supabaseService';
 import LicenseTable from '../components/LicenseTable';
 import { ABBK_COLORS } from '../utils/theme';
+import { translateFormation } from '../services/translationService';
 import { useLanguage } from '../context/LanguageContext';
 
 export default function Step2InterventionType() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { formData, updateFormData, showToast } = useFormContext();
   const [formations, setFormations] = useState([]);
   const [intervenants, setIntervenants] = useState([]);
@@ -17,6 +19,7 @@ export default function Step2InterventionType() {
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showFormationList, setShowFormationList] = useState(true); // For mobile toggle
 
   useEffect(() => {
     loadFormations();
@@ -32,19 +35,33 @@ export default function Step2InterventionType() {
     }
   }, [softwareFilter]);
 
-  const loadFormations = async (software = null) => {
-    try {
-      setLoading(true);
-      const data = await getAllFormations(software);
-      setFormations(data);
-    } catch (error) {
-      console.error('Error loading formations:', error);
-      showToast?.(t('error.loadingFormations') || 'Error loading formations: ' + error.message, 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
 
+const loadFormations = async (software = null) => {
+  try {
+    setLoading(true);
+    const data = await getAllFormations(software);
+    
+    // Translate formations if not in French (database default)
+    if (language === 'en') {
+      const translatedData = await Promise.all(
+        data.map(formation => translateFormation(formation, 'en'))
+      );
+      setFormations(translatedData);
+    } else {
+      setFormations(data);
+    }
+  } catch (error) {
+    console.error('Error loading formations:', error);
+    showToast?.(t('error.loadingFormations') || 'Error loading formations: ' + error.message, 'error');
+  } finally {
+    setLoading(false);
+  }
+};
+useEffect(() => {
+  if (!loading && formations.length > 0) {
+    loadFormations(softwareFilter === 'all' ? null : softwareFilter);
+  }
+}, [language]);
   const loadIntervenants = async () => {
     try {
       const data = await getAllIntervenants();
@@ -63,9 +80,6 @@ export default function Step2InterventionType() {
       console.error('Error checking admin:', error);
     }
   };
-
- 
-
 
   const softwareList = ['all', ...new Set(formations.map(f => f.software))];
 
@@ -119,6 +133,10 @@ export default function Step2InterventionType() {
       
       setActiveFormation(formation.formation_id);
       setHasUnsavedChanges(false);
+      // On mobile, automatically switch to details view
+      if (window.innerWidth < 1024) {
+        setShowFormationList(false);
+      }
     }
   };
 
@@ -145,7 +163,7 @@ export default function Step2InterventionType() {
         methods: '', 
         theoryHours: '', 
         practiceHours: '',
-        intervenant: '' // NEW FIELD
+        intervenant: ''
       }
     ];
     updateFormationData(activeFormation, 'schedule', newSchedule);
@@ -215,7 +233,6 @@ export default function Step2InterventionType() {
   const activeFormationData = activeFormation ? formData.formationsData[activeFormation] : null;
   const activeFormationObj = activeFormation ? formations.find(f => f.formation_id === activeFormation) : null;
   const isCustomFormation = activeFormationObj?.is_custom;
-
   const filteredFormations = formations;
 
   if (loading) {
@@ -229,413 +246,300 @@ export default function Step2InterventionType() {
     );
   }
 
+  // Continue in next artifact for the JSX return...
+
   return (
-    <div className="space-y-6">
-      
-
-      {/* License Mode */}
-      {formData.interventionType === 'license' && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 transition-colors duration-300">
-          <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-6">{t('step2.licenseInfo')}</h3>
-          <LicenseTable />
-        </div>
-      )}
-
-      {/* Formation Mode */}
-      {formData.interventionType === 'formation' && (
-        <div className="grid grid-cols-12 gap-6">
-          {/* Formation List */}
-          <div className="col-span-3">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sticky top-4 transition-colors duration-300">
-              <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">{t('step2.formations')}</h3>
-              
-              {/* Software Filter */}
-              <select
-                value={softwareFilter}
-                onChange={(e) => setSoftwareFilter(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm mb-4 transition-colors duration-300 focus:ring-2 focus:border-transparent"
-                style={{ focusRingColor: ABBK_COLORS.red }}
-              >
-                {softwareList.map(software => (
-                  <option key={software} value={software}>
-                    {software === 'all' ? t('step2.allSoftware') : software}
-                  </option>
-                ))}
-              </select>
-
-              <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">{t('step2.selectFormations')}</p>
-              
-              <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                {filteredFormations.map((formation) => {
-                  const isSelected = (formData.selectedFormations || []).includes(formation.formation_id);
-                  return (
-                    <button
-                      key={formation.id}
-                      onClick={() => toggleFormation(formation)}
-                      className={`w-full p-3 rounded-lg text-left transition-all text-sm ${
-                        isSelected
-                          ? activeFormation === formation.formation_id
-                            ? 'text-white shadow-md'
-                            : 'border-2 text-gray-700 dark:text-gray-300'
-                          : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
-                      }`}
-                      style={isSelected && activeFormation === formation.formation_id ? {
-                        backgroundColor: ABBK_COLORS.red,
-                        borderColor: ABBK_COLORS.red
-                      } : isSelected ? {
-                        borderColor: ABBK_COLORS.red,
-                        backgroundColor: `${ABBK_COLORS.red}20`
-                      } : {}}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium">{formation.name}</span>
-                        {isSelected && <span className="font-bold">✓</span>}
-                      </div>
-                      <div className="text-xs opacity-75 mt-1">{formation.formation_ref}</div>
-                      <div className="text-xs opacity-60 mt-1">{formation.software}</div>
-                      {formation.is_custom && (
-                        <div 
-                          className="text-xs text-white px-2 py-1 rounded mt-2 inline-block"
-                          style={{ backgroundColor: ABBK_COLORS.darkred }}
-                        >
-                          {t('step2.customFormation')}
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              
-              {(formData.selectedFormations || []).length > 0 && (
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                  <p className="text-xs text-gray-600 dark:text-gray-400">
-                    {(formData.selectedFormations || []).length} {t('step2.selected')}
-                  </p>
-                  {hasUnsavedChanges && (
-                    <p className="text-xs mt-1" style={{ color: ABBK_COLORS.red }}>
-                      {t('step2.unsavedChanges')}
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Formation Details */}
-          <div className="col-span-9">
-            {activeFormation && activeFormationData ? (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 max-h-[700px] overflow-y-auto transition-colors duration-300">
-                <div 
-                  className="text-white p-4 rounded-lg mb-6 -mx-8 -mt-8 flex items-center justify-between"
-                  style={{ backgroundColor: ABBK_COLORS.red }}
-                >
-                  <div>
-                    <h3 className="text-xl font-bold">{activeFormationObj?.name || t('step2.formations')}</h3>
-                    <p className="text-sm opacity-90 mt-1">
-                      {isCustomFormation ? t('step2.editAllFields') : t('step2.templateModify')}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    {hasUnsavedChanges && (
-                      <button
-                        onClick={() => setShowSaveModal(true)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white rounded-lg hover:bg-gray-100 transition"
-                        style={{ color: ABBK_COLORS.red }}
-                      >
-                        <Save size={18} />
-                        {t('common.save')}
-                      </button>
-                    )}
-                    <Edit2 size={24} className="opacity-75" />
-                  </div>
-                </div>
-
-                <div className="space-y-6">
-                  {/* Basic Info */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('step2.formationName')} *
-                        {!isAdmin && !isCustomFormation && <Lock size={14} className="inline ml-1 text-gray-400" />}
-                      </label>
-                      <input
-                        type="text"
-                        value={activeFormationData.formationName}
-                        onChange={(e) => updateFormationData(activeFormation, 'formationName', e.target.value)}
-                        disabled={!isAdmin && !isCustomFormation}
-                        className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:border-transparent ${
-                          !isAdmin && !isCustomFormation ? 'cursor-not-allowed opacity-60' : ''
-                        }`}
-                        style={{ focusRingColor: ABBK_COLORS.red }}
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        {t('step2.reference')} *
-                        {!isAdmin && !isCustomFormation && <Lock size={14} className="inline ml-1 text-gray-400" />}
-                      </label>
-                      <input
-                        type="text"
-                        value={activeFormationData.formationRef}
-                        onChange={(e) => updateFormationData(activeFormation, 'formationRef', e.target.value)}
-                        disabled={!isAdmin && !isCustomFormation}
-                        className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:border-transparent ${
-                          !isAdmin && !isCustomFormation ? 'cursor-not-allowed opacity-60' : ''
-                        }`}
-                        style={{ focusRingColor: ABBK_COLORS.red }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Additional Fields */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('step2.prerequisites')}
-                    </label>
-                    <textarea
-                      value={activeFormationData.prerequisites}
-                      onChange={(e) => updateFormationData(activeFormation, 'prerequisites', e.target.value)}
-                      rows="3"
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:border-transparent"
-                      style={{ focusRingColor: ABBK_COLORS.red }}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('step2.objectives')}
-                    </label>
-                    <textarea
-                      value={activeFormationData.objectives}
-                      onChange={(e) => updateFormationData(activeFormation, 'objectives', e.target.value)}
-                      rows="3"
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:border-transparent"
-                      style={{ focusRingColor: ABBK_COLORS.red }}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      {t('step2.competencies')}
-                    </label>
-                    <textarea
-                      value={activeFormationData.competencies}
-                      onChange={(e) => updateFormationData(activeFormation, 'competencies', e.target.value)}
-                      rows="3"
-                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300 focus:ring-2 focus:border-transparent"
-                      style={{ focusRingColor: ABBK_COLORS.red }}
-                    />
-                  </div>
-
-                  {/* Schedule Table with Intervenant Column */}
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        {t('step2.schedule')}
-                      </label>
-                      <div className="flex gap-2">
-                      
-                        <button
-                          onClick={addScheduleDay}
-                          className="flex items-center gap-2 px-3 py-1.5 text-white rounded-lg text-xs hover:shadow-md transition"
-                          style={{ backgroundColor: ABBK_COLORS.red }}
-                          onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
-                          onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
-                        >
-                          <Plus size={14} />
-                          {t('step2.addDay')}
-                        </button>
-                      </div>
-                    </div>
-
-
-                    <div className="border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
-                      <table className="w-full text-xs">
-                        <thead className="bg-gray-100 dark:bg-gray-700">
-                          <tr>
-                            <th className="px-2 py-2 text-left font-semibold w-12 text-gray-900 dark:text-white">{t('step4.days')}</th>
-                            <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">{t('step4.content')}</th>
-                            <th className="px-2 py-2 text-left font-semibold text-gray-900 dark:text-white">{t('step4.methods')}</th>
-                            <th className="px-2 py-2 text-center font-semibold w-16 text-gray-900 dark:text-white">{t('step4.theory')}</th>
-                            <th className="px-2 py-2 text-center font-semibold w-16 text-gray-900 dark:text-white">{t('step4.practice')}</th>
-                            <th className="px-2 py-2 text-left font-semibold w-32 text-gray-900 dark:text-white">Intervenant</th>
-                            <th className="px-2 py-2 w-8"></th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(activeFormationData.schedule || []).map((day, index) => (
-                            <tr key={index} className="border-t border-gray-300 dark:border-gray-600">
-                              <td className="px-2 py-2">
-                                <input
-                                  type="text"
-                                  value={day.day}
-                                  onChange={(e) => updateScheduleDay(index, 'day', e.target.value)}
-                                  className="w-full px-1 py-1 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
-                                />
-                              </td>
-                              <td className="px-2 py-2">
-                                <textarea
-                                  value={day.content}
-                                  onChange={(e) => updateScheduleDay(index, 'content', e.target.value)}
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
-                                  rows="3"
-                                  placeholder={t('step4.content')}
-                                />
-                              </td>
-                              <td className="px-2 py-2">
-                                <textarea
-                                  value={day.methods}
-                                  onChange={(e) => updateScheduleDay(index, 'methods', e.target.value)}
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
-                                  rows="3"
-                                  placeholder={t('step4.methods')}
-                                />
-                              </td>
-                              <td className="px-2 py-2">
-                                <input
-                                  type="text"
-                                  value={day.theoryHours}
-                                  onChange={(e) => updateScheduleDay(index, 'theoryHours', e.target.value)}
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
-                                  placeholder="6h"
-                                />
-                              </td>
-                              <td className="px-2 py-2">
-                                <input
-                                  type="text"
-                                  value={day.practiceHours}
-                                  onChange={(e) => updateScheduleDay(index, 'practiceHours', e.target.value)}
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
-                                  placeholder="0h"
-                                />
-                              </td>
-                              <td className="px-2 py-2">
-                                <select
-                                  value={day.intervenant || ''}
-                                  onChange={(e) => updateScheduleDay(index, 'intervenant', e.target.value)}
-                                  className="w-full px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded transition-colors duration-300"
-                                >
-                                  <option value="">-- Select --</option>
-                                  {intervenants.map((intervenant) => (
-                                    <option key={intervenant.id} value={intervenant.name}>
-                                      {intervenant.name}
-                                    </option>
-                                  ))}
-                                </select>
-                              </td>
-                              <td className="px-2 py-2">
-                                {(activeFormationData.schedule || []).length > 1 && (
-                                  <button
-                                    onClick={() => removeScheduleDay(index)}
-                                    className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900 rounded transition"
-                                  >
-                                    <Trash2 size={12} />
-                                  </button>
-                                )}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-
-                    {/* Total Hours */}
-                    <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg mt-3 transition-colors duration-300">
-                      <div className="flex justify-between text-xs">
-                        <div>
-                          <span className="font-semibold text-gray-900 dark:text-white">{t('step4.theory')}: </span>
-                          <span className="text-gray-700 dark:text-gray-300">
-                            {(activeFormationData.schedule || []).reduce((sum, day) => {
-                              const hours = day.theoryHours === '-' ? 0 : (parseFloat(day.theoryHours) || 0);
-                              return sum + hours;
-                            }, 0)}h
-                          </span>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-gray-900 dark:text-white">{t('step4.practice')}: </span>
-                          <span className="text-gray-700 dark:text-gray-300">
-                            {(activeFormationData.schedule || []).reduce((sum, day) => {
-                              const hours = day.practiceHours === '-' ? 0 : (parseFloat(day.practiceHours) || 0);
-                              return sum + hours;
-                            }, 0)}h
-                          </span>
-                        </div>
-                        <div>
-                          <span className="font-semibold text-gray-900 dark:text-white">{t('step4.total')}: </span>
-                          <span className="font-bold text-gray-900 dark:text-white">
-                            {(activeFormationData.schedule || []).reduce((sum, day) => {
-                              const theory = day.theoryHours === '-' ? 0 : (parseFloat(day.theoryHours) || 0);
-                              const practice = day.practiceHours === '-' ? 0 : (parseFloat(day.practiceHours) || 0);
-                              return sum + theory + practice;
-                            }, 0)}h
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center transition-colors duration-300">
-                <p className="text-xl text-gray-400 dark:text-gray-500 mb-2">{t('step2.selectToView') || 'Select a formation to view and edit details'}</p>
-                <p className="text-sm text-gray-500 dark:text-gray-600">{t('step2.fieldsPreFilled') || 'All fields are pre-filled but can be modified'}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
-      {!formData.interventionType && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center transition-colors duration-300">
-          <p className="text-xl text-gray-400 dark:text-gray-500">{t('step2.selectType')}</p>
-          <p className="text-sm text-gray-500 dark:text-gray-600 mt-2">{t('step2.formationOrLicense') || 'Formation or License'}</p>
-        </div>
-      )}
-
-      {/* Save Modal */}
-      {showSaveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 transition-colors duration-300">
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">{t('step2.saveChanges')}</h3>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              {t('step2.saveMessage')}
-            </p>
-
-            <div className="space-y-3">
-              <button
-                onClick={handleSaveAsNew}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 text-white rounded-lg font-medium transition shadow-md"
-                style={{ backgroundColor: ABBK_COLORS.red }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = ABBK_COLORS.darkred}
-                onMouseLeave={(e) => e.target.style.backgroundColor = ABBK_COLORS.red}
-              >
-                <Save size={20} />
-                {t('step2.saveAsNew')}
-              </button>
-
-              <button
-                onClick={handleSkipSave}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition"
-              >
-                <SkipForward size={20} />
-                {t('step2.useWithoutSaving')}
-              </button>
-
-              <button
-                onClick={() => setShowSaveModal(false)}
-                className="w-full px-6 py-3 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 font-medium transition"
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-4 text-center">
-              {t('step2.saveNote')}
-            </p>
-          </div>
-        </div>
-      )}
+ 
+<div className="space-y-6"> {/* License Mode - Already responsive with LicenseTable */}
+  {formData.interventionType === 'license' && (
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 lg:p-8">
+      <h3 className="text-lg sm:text-xl font-bold mb-4 sm:mb-6">{t('step2.licenseInfo')}</h3>
+      <LicenseTable />
     </div>
+  )}
+
+  {/* Formation Mode */}
+  {formData.interventionType === 'formation' && (
+    <>
+      {/* Mobile: Show/Hide Toggle */}
+      <div className="lg:hidden mb-4">
+        <button
+          onClick={() => setShowFormationList(!showFormationList)}
+          className="w-full px-4 py-3 text-white rounded-lg font-medium"
+          style={{ backgroundColor: ABBK_COLORS.red }}
+        >
+          {showFormationList ? 'View Selected Details' : 'Back to Formation List'}
+        </button>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6">
+        {/* Formation List - Hidden on mobile when viewing details */}
+        <div className={`lg:col-span-3 ${showFormationList ? 'block' : 'hidden lg:block'}`}>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sticky top-4">
+            <h3 className="text-base sm:text-lg font-bold mb-4">{t('step2.formations')}</h3>
+            
+            {/* Software Filter */}
+            <select
+              value={softwareFilter}
+              onChange={(e) => setSoftwareFilter(e.target.value)}
+              className="w-full px-3 py-2 text-sm border rounded-lg mb-4"
+            >
+              {softwareList.map(software => (
+                <option key={software} value={software}>
+                  {software === 'all' ? t('step2.allSoftware') : software}
+                </option>
+              ))}
+            </select>
+
+            {/* Formation List - Make scrollable */}
+            <div className="space-y-2 max-h-[400px] sm:max-h-[600px] overflow-y-auto">
+              {filteredFormations.map((formation) => {
+                const isSelected = (formData.selectedFormations || []).includes(formation.formation_id);
+                return (
+                  <button
+                    key={formation.id}
+                    onClick={() => toggleFormation(formation)}
+                    className={`w-full p-3 rounded-lg text-left transition-all text-sm ${
+                      isSelected && activeFormation === formation.formation_id
+                        ? 'text-white shadow-md'
+                        : isSelected 
+                        ? 'border-2'
+                        : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                    style={isSelected && activeFormation === formation.formation_id ? {
+                      backgroundColor: ABBK_COLORS.red
+                    } : isSelected ? {
+                      borderColor: ABBK_COLORS.red,
+                      backgroundColor: `${ABBK_COLORS.red}20`
+                    } : {}}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium truncate">{formation.name}</span>
+                      {isSelected && <span className="font-bold ml-2">✓</span>}
+                    </div>
+                    <div className="text-xs opacity-75 mt-1 truncate">{formation.formation_ref}</div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Formation Details - Show on mobile when formation selected */}
+        <div className={`lg:col-span-9 ${!showFormationList ? 'block' : 'hidden lg:block'}`}>
+          {activeFormation && activeFormationData ? (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 lg:p-8 max-h-[700px] overflow-y-auto">
+              {/* Header */}
+              <div 
+                className="text-white p-4 sm:p-6 rounded-lg mb-4 sm:mb-6 -mx-4 sm:-mx-6 lg:-mx-8 -mt-4 sm:-mt-6 lg:-mt-8"
+                style={{ backgroundColor: ABBK_COLORS.red }}
+              >
+                <h3 className="text-lg sm:text-xl font-bold">{activeFormationObj?.name}</h3>
+                <p className="text-xs sm:text-sm opacity-90 mt-1">
+                  {isCustomFormation ? t('step2.editAllFields') : t('step2.templateModify')}
+                </p>
+              </div>
+
+              {/* Form Fields */}
+              <div className="space-y-4 sm:space-y-6">
+                {/* Basic Info - Stack on mobile */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      {t('step2.formationName')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={activeFormationData.formationName}
+                      onChange={(e) => updateFormationData(activeFormation, 'formationName', e.target.value)}
+                      disabled={!isAdmin && !isCustomFormation}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg text-sm sm:text-base"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      {t('step2.reference')} *
+                    </label>
+                    <input
+                      type="text"
+                      value={activeFormationData.formationRef}
+                      onChange={(e) => updateFormationData(activeFormation, 'formationRef', e.target.value)}
+                      disabled={!isAdmin && !isCustomFormation}
+                      className="w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg text-sm sm:text-base"
+                    />
+                  </div>
+                </div>
+{/* Textareas */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    {t('step2.prerequisites')}
+                  </label>
+                  <textarea
+                    value={activeFormationData.prerequisites}
+                    onChange={(e) => updateFormationData(activeFormation, 'prerequisites', e.target.value)}
+                    rows="3"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg text-sm sm:text-base"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    {t('step2.objectives')}
+                  </label>
+                  <textarea
+                    value={activeFormationData.objectives}
+                    onChange={(e) => updateFormationData(activeFormation, 'objectives', e.target.value)}
+                    rows="3"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg text-sm sm:text-base"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    {t('step2.competencies')}
+                  </label>
+                  <textarea
+                    value={activeFormationData.competencies}
+                    onChange={(e) => updateFormationData(activeFormation, 'competencies', e.target.value)}
+                    rows="3"
+                    className="w-full px-3 sm:px-4 py-2 sm:py-3 border rounded-lg text-sm sm:text-base"
+                  />
+                </div>
+
+                {/* Schedule Table - IMPORTANT: Horizontal scroll on mobile */}
+                <div>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+                    <label className="text-sm font-medium">{t('step2.schedule')}</label>
+                    <button
+                      onClick={addScheduleDay}
+                      className="flex items-center gap-2 px-3 py-2 text-white rounded-lg text-xs sm:text-sm"
+                      style={{ backgroundColor: ABBK_COLORS.red }}
+                    >
+                      <Plus size={14} />
+                      {t('step2.addDay')}
+                    </button>
+                  </div>
+
+                  {/* Mobile hint */}
+                  <p className="text-xs text-gray-500 mb-2 sm:hidden">
+                    ℹ️ Scroll horizontally to view all columns
+                  </p>
+
+                  <div className="border rounded-lg overflow-x-auto">
+                    <table className="w-full text-xs min-w-[800px]">
+                      <thead className="bg-gray-100">
+                        <tr>
+                          <th className="px-2 py-2 text-left font-semibold w-12">
+                            {t('step4.days')}
+                          </th>
+                          <th className="px-2 py-2 text-left font-semibold">
+                            {t('step4.content')}
+                          </th>
+                          <th className="px-2 py-2 text-left font-semibold">
+                            {t('step4.methods')}
+                          </th>
+                          <th className="px-2 py-2 text-center font-semibold w-16">
+                            {t('step4.theory')}
+                          </th>
+                          <th className="px-2 py-2 text-center font-semibold w-16">
+                            {t('step4.practice')}
+                          </th>
+                          <th className="px-2 py-2 text-left font-semibold w-32">
+                            Intervenant
+                          </th>
+                          <th className="px-2 py-2 w-8"></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(activeFormationData.schedule || []).map((day, index) => (
+                          <tr key={index} className="border-t">
+                            <td className="px-2 py-2">
+                              <input
+                                type="text"
+                                value={day.day}
+                                onChange={(e) => updateScheduleDay(index, 'day', e.target.value)}
+                                className="w-full px-1 py-1 text-xs border rounded text-center"
+                              />
+                            </td>
+                            <td className="px-2 py-2">
+                              <textarea
+                                value={day.content}
+                                onChange={(e) => updateScheduleDay(index, 'content', e.target.value)}
+                                className="w-full px-2 py-1 text-xs border rounded"
+                                rows="2"
+                              />
+                            </td>
+                            <td className="px-2 py-2">
+                              <textarea
+                                value={day.methods}
+                                onChange={(e) => updateScheduleDay(index, 'methods', e.target.value)}
+                                className="w-full px-2 py-1 text-xs border rounded"
+                                rows="2"
+                              />
+                            </td>
+                            <td className="px-2 py-2">
+                              <input
+                                type="text"
+                                value={day.theoryHours}
+                                onChange={(e) => updateScheduleDay(index, 'theoryHours', e.target.value)}
+                                className="w-full px-2 py-1 text-xs border rounded text-center"
+                                placeholder="6h"
+                              />
+                            </td>
+                            <td className="px-2 py-2">
+                              <input
+                                type="text"
+                                value={day.practiceHours}
+                                onChange={(e) => updateScheduleDay(index, 'practiceHours', e.target.value)}
+                                className="w-full px-2 py-1 text-xs border rounded text-center"
+                                placeholder="0h"
+                              />
+                            </td>
+                            <td className="px-2 py-2">
+                              <select
+                                value={day.intervenant || ''}
+                                onChange={(e) => updateScheduleDay(index, 'intervenant', e.target.value)}
+                                className="w-full px-2 py-1 text-xs border rounded"
+                              >
+                                <option value="">-- Select --</option>
+                                {intervenants.map((int) => (
+                                  <option key={int.id} value={int.name}>{int.name}</option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-2 py-2">
+                              {(activeFormationData.schedule || []).length > 1 && (
+                                <button
+                                  onClick={() => removeScheduleDay(index)}
+                                  className="p-1 text-red-600 hover:bg-red-50 rounded"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 sm:p-12 text-center">
+              <p className="text-lg sm:text-xl text-gray-400 mb-2">
+                {t('step2.selectToView')}
+              </p>
+              <p className="text-xs sm:text-sm text-gray-500">
+                {t('step2.fieldsPreFilled')}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  )}
+</div>
   );
 }

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { INITIAL_FORM_DATA } from '../utils/constants';
+import { translateFormData } from '../services/translationService';
 
 const FormContext = createContext();
 
@@ -12,7 +13,6 @@ export const useFormContext = () => {
 };
 
 export const FormProvider = ({ children }) => {
-  // Load saved step and data from localStorage on mount
   const [formData, setFormData] = useState(() => {
     const savedData = localStorage.getItem('formData');
     return savedData ? JSON.parse(savedData) : INITIAL_FORM_DATA;
@@ -24,13 +24,12 @@ export const FormProvider = ({ children }) => {
   });
   
   const [toast, setToast] = useState(null);
+  const [isTranslatingForm, setIsTranslatingForm] = useState(false);
 
-  // Save formData to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('formData', JSON.stringify(formData));
   }, [formData]);
 
-  // Save currentStep to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('currentStep', currentStep.toString());
   }, [currentStep]);
@@ -47,13 +46,32 @@ export const FormProvider = ({ children }) => {
     setFormData((prev) => ({ ...prev, ...updates }));
   };
 
+  /**
+   * Translate all form data to target language
+   */
+  const translateForm = async (targetLang) => {
+    setIsTranslatingForm(true);
+    showToast(`Translating to ${targetLang === 'fr' ? 'French' : 'English'}...`, 'info');
+    
+    try {
+      const translated = await translateFormData(formData, targetLang);
+      setFormData(translated);
+      showToast('✅ Translation complete!', 'success');
+    } catch (error) {
+      console.error('Translation error:', error);
+      showToast('Translation failed. Please try again.', 'error');
+    } finally {
+      setIsTranslatingForm(false);
+    }
+  };
+
   const addLicense = () => {
     setFormData((prev) => ({
       ...prev,
       licenses: [...prev.licenses, { name: '', quantity: '', serial: '', invoice: '' }]
     }));
   };
-
+  
   const updateLicense = (index, field, value) => {
     setFormData((prev) => {
       const newLicenses = [...prev.licenses];
@@ -88,26 +106,38 @@ export const FormProvider = ({ children }) => {
     localStorage.removeItem('currentStep');
   };
 
-  return (
-    <FormContext.Provider
-      value={{
-        formData,
-        setFormData,
-        updateFormData,
-        currentStep,
-        setCurrentStep,
-        goNext,
-        goBack,
-        addLicense,
-        updateLicense,
-        removeLicense,
-        resetForm,
-        toast,
-        showToast,
-        hideToast
-      }}
-    >
-      {children}
-    </FormContext.Provider>
-  );
+  const getAllForms = () => {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        const forms = JSON.parse(localStorage.getItem('formationForms') || '[]');
+        resolve(forms);
+      }, 500);
+    });
+  };
+
+return (
+  <FormContext.Provider
+    value={{
+      formData,
+      setFormData,
+      updateFormData,
+      currentStep,
+      setCurrentStep,
+      goNext,
+      goBack,
+      addLicense,
+      updateLicense,
+      removeLicense,
+      resetForm,
+      toast,
+      showToast,
+      hideToast,
+      getAllForms,
+      translateForm,           // MAKE SURE THIS IS HERE
+      isTranslatingForm        // AND THIS
+    }}
+  >
+    {children}
+  </FormContext.Provider>
+);
 };

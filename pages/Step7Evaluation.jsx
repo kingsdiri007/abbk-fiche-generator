@@ -7,61 +7,92 @@ export default function Step7Evaluation() {
   const { t } = useLanguage();
   const { formData, updateFormData } = useFormContext();
 
-  // Auto-fill from previous steps
+  // FIXED: Auto-sync with presence data - runs every time we enter this step
   useEffect(() => {
-    if (!formData.evaluationData) {
-      const presenceData = formData.presenceData || {};
-      const planData = formData.planData?.formations?.[0] || {};
-      
-      // Get participant names from presence
-      const participantNames = (presenceData.participants || [])
-        .map(p => p.nom)
-        .filter(name => name);
-      
-      // Create evaluation rows for each participant
-      const evaluations = participantNames.map(name => ({
-        participantName: name,
-        niveauInitial: '',
-        connaissancesTheoriques: '',
-        competencesPratiques: '',
-        niveauParticipation: '',
-        contributionDiscussions: '',
-        bonneComprehension: '',
-        capaciteAppliquer: '',
-        niveauCompetences: '',
-        attitudeGenerale: '',
-        participantPonctuel: '',
-        amelioration: ''
-      }));
-      
-      updateFormData({
-        evaluationData: {
-          themeFormation: planData.formationName || presenceData.themeFormation || '',
-          periodeDebut: presenceData.periodeDebut || '',
-          periodeFin: presenceData.periodeFin || '',
-          dureeFormation: presenceData.dureeFormation || planData.dureeFormation || '',
-          formateur: presenceData.formateur || planData.formateur || '',
-          evaluations: evaluations.length > 0 ? evaluations : [{
-            participantName: '',
-            niveauInitial: '',
-            connaissancesTheoriques: '',
-            competencesPratiques: '',
-            niveauParticipation: '',
-            contributionDiscussions: '',
-            bonneComprehension: '',
-            capaciteAppliquer: '',
-            niveauCompetences: '',
-            attitudeGenerale: '',
-            participantPonctuel: '',
-            amelioration: ''
-          }],
-          noteGeneral: Array(8).fill('0'),
-          notes: "* Le formulaire d'évaluation est obligatoire et doit être envoyé uniquement aux coordonnateurs de la formation.",
-          dateLe: presenceData.dateLe || new Date().toISOString().split('T')[0]
-        }
-      });
+    const presenceData = formData.presenceData || {};
+    const planData = formData.planData?.formations?.[0] || {};
+    
+    // Get participant names from presence
+    const participantNames = (presenceData.participants || [])
+      .map(p => p.nom)
+      .filter(name => name);
+    
+    if (participantNames.length === 0) {
+      // No participants, create empty evaluation
+      if (!formData.evaluationData) {
+        updateFormData({
+          evaluationData: {
+            themeFormation: planData.formationName || presenceData.themeFormation || '',
+            periodeDebut: presenceData.periodeDebut || '',
+            periodeFin: presenceData.periodeFin || '',
+            dureeFormation: presenceData.dureeFormation || planData.dureeFormation || '',
+            formateur: presenceData.formateur || planData.formateur || '',
+            evaluations: [{
+              participantName: '',
+              niveauInitial: '0',
+              connaissancesTheoriques: '0',
+              competencesPratiques: '0',
+              niveauParticipation: '0',
+              contributionDiscussions: '0',
+              bonneComprehension: '0',
+              capaciteAppliquer: '0',
+              niveauCompetences: '0',
+              attitudeGenerale: '0',
+              participantPonctuel: '0',
+              amelioration: '0'
+            }],
+            notes: "* Le formulaire d'évaluation est obligatoire et doit être envoyé uniquement aux coordonnateurs de la formation.",
+            dateLe: presenceData.dateLe || new Date().toISOString().split('T')[0]
+          }
+        });
+      }
+      return;
     }
-  }, []);
+
+    // Sync participants from presence to evaluation
+    const currentEvaluations = formData.evaluationData?.evaluations || [];
+    const existingNames = currentEvaluations.map(e => e.participantName);
+    
+    // Create evaluations array matching ALL participants from presence
+    const syncedEvaluations = participantNames.map(name => {
+      // Find existing evaluation for this participant
+      const existing = currentEvaluations.find(e => e.participantName === name);
+      
+      if (existing) {
+        // Keep existing data
+        return existing;
+      } else {
+        // Create new evaluation with default values of '0'
+        return {
+          participantName: name,
+          niveauInitial: '0',
+          connaissancesTheoriques: '0',
+          competencesPratiques: '0',
+          niveauParticipation: '0',
+          contributionDiscussions: '0',
+          bonneComprehension: '0',
+          capaciteAppliquer: '0',
+          niveauCompetences: '0',
+          attitudeGenerale: '0',
+          participantPonctuel: '0',
+          amelioration: '0'
+        };
+      }
+    });
+    
+    updateFormData({
+      evaluationData: {
+        themeFormation: planData.formationName || presenceData.themeFormation || formData.evaluationData?.themeFormation || '',
+        periodeDebut: presenceData.periodeDebut || formData.evaluationData?.periodeDebut || '',
+        periodeFin: presenceData.periodeFin || formData.evaluationData?.periodeFin || '',
+        dureeFormation: presenceData.dureeFormation || planData.dureeFormation || formData.evaluationData?.dureeFormation || '',
+        formateur: presenceData.formateur || planData.formateur || formData.evaluationData?.formateur || '',
+        evaluations: syncedEvaluations,
+        notes: formData.evaluationData?.notes || "* Le formulaire d'évaluation est obligatoire et doit être envoyé uniquement aux coordonnateurs de la formation.",
+        dateLe: formData.evaluationData?.dateLe || presenceData.dateLe || new Date().toISOString().split('T')[0]
+      }
+    });
+  }, [formData.presenceData]); // Re-sync when presence data changes
 
   const evaluationData = formData.evaluationData || {
     themeFormation: '',
@@ -71,19 +102,18 @@ export default function Step7Evaluation() {
     formateur: '',
     evaluations: [{
       participantName: '',
-      niveauInitial: '',
-      connaissancesTheoriques: '',
-      competencesPratiques: '',
-      niveauParticipation: '',
-      contributionDiscussions: '',
-      bonneComprehension: '',
-      capaciteAppliquer: '',
-      niveauCompetences: '',
-      attitudeGenerale: '',
-      participantPonctuel: '',
-      amelioration: ''
+      niveauInitial: '0',
+      connaissancesTheoriques: '0',
+      competencesPratiques: '0',
+      niveauParticipation: '0',
+      contributionDiscussions: '0',
+      bonneComprehension: '0',
+      capaciteAppliquer: '0',
+      niveauCompetences: '0',
+      attitudeGenerale: '0',
+      participantPonctuel: '0',
+      amelioration: '0'
     }],
-    noteGeneral: Array(8).fill('0'),
     notes: '',
     dateLe: ''
   };
@@ -103,25 +133,30 @@ export default function Step7Evaluation() {
     updateEvaluationData({ evaluations: newEvaluations });
   };
 
-  const updateNoteGeneral = (index, value) => {
-    const newNotes = [...evaluationData.noteGeneral];
-    newNotes[index] = value;
-    updateEvaluationData({ noteGeneral: newNotes });
+  // FIXED: Calculate Note Général automatically as average of all criteria
+  const calculateNoteGeneral = (evaluation) => {
+    const fields = [
+      'niveauInitial',
+      'connaissancesTheoriques',
+      'competencesPratiques',
+      'niveauParticipation',
+      'contributionDiscussions',
+      'bonneComprehension',
+      'capaciteAppliquer',
+      'niveauCompetences',
+      'attitudeGenerale',
+      'participantPonctuel',
+      'amelioration'
+    ];
+    
+    const sum = fields.reduce((total, field) => {
+      const value = parseFloat(evaluation[field]) || 0;
+      return total + value;
+    }, 0);
+    
+    // Return average rounded to 1 decimal place
+    return (sum / fields.length).toFixed(1);
   };
-
-  const criteria = [
-    { field: 'niveauInitial', label: t('step7.niveauInitial') },
-    { field: 'connaissancesTheoriques', label: t('step7.connaissances') },
-    { field: 'competencesPratiques', label: t('step7.competencesPratiques') },
-    { field: 'niveauParticipation', label: t('step7.niveauParticipation') },
-    { field: 'contributionDiscussions', label: t('step7.contribution') },
-    { field: 'bonneComprehension', label: t('step7.bonneComprehension') },
-    { field: 'capaciteAppliquer', label: t('step7.capaciteAppliquer') },
-    { field: 'niveauCompetences', label: t('step7.niveauCompetences') },
-    { field: 'attitudeGenerale', label: t('step7.attitude') },
-    { field: 'participantPonctuel', label: t('step7.ponctuel') },
-    { field: 'amelioration', label: t('step7.amelioration') }
-  ];
 
   return (
     <div className="max-w-[98%] mx-auto">
@@ -136,7 +171,7 @@ export default function Step7Evaluation() {
         </div>
 
         {/* Header Info */}
-        <div className="grid grid-cols-2 gap-4 mb-6 p-4 border-2 border-gray-800 dark:border-gray-600 text-sm">
+        <div className="grid grid-cols-2 gap-4 mb-6 p-4 border-2 border-gray-800 dark:border-gray-600 text-sm transition-colors duration-300">
           <div>
             <label className="font-bold text-gray-900 dark:text-white">{t('step7.theme')}</label>
             <input
@@ -185,18 +220,18 @@ export default function Step7Evaluation() {
         </div>
 
         {/* Evaluation Table */}
-        <div className="mb-6 overflow-x-auto border-2 border-gray-800 dark:border-gray-600 rounded-lg">
+        <div className="mb-6 overflow-x-auto border-2 border-gray-800 dark:border-gray-600 rounded-lg transition-colors duration-300">
           <table className="w-full text-xs border-collapse">
             <thead>
-              <tr className="bg-gray-200 dark:bg-gray-700">
+              <tr className="bg-gray-200 dark:bg-gray-700 transition-colors duration-300">
                 <th className="border-2 border-gray-800 dark:border-gray-600 p-2 text-left font-bold text-gray-900 dark:text-white" rowSpan="2" style={{minWidth: '200px'}}>
-                  
+                  Critères d'évaluation
                 </th>
                 <th className="border-2 border-gray-800 dark:border-gray-600 p-2 text-center font-bold text-gray-900 dark:text-white" colSpan={evaluationData.evaluations.length}>
                   {t('step7.participants')}
                 </th>
               </tr>
-              <tr className="bg-gray-100 dark:bg-gray-600">
+              <tr className="bg-gray-100 dark:bg-gray-600 transition-colors duration-300">
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <th key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-2 text-center font-bold text-gray-900 dark:text-white" style={{minWidth: '100px'}}>
                     {evaluation.participantName}
@@ -206,7 +241,7 @@ export default function Step7Evaluation() {
             </thead>
             <tbody>
               {/* Section 1: Informations sur le Niveau */}
-              <tr className="bg-gray-300 dark:bg-gray-700">
+              <tr className="bg-gray-300 dark:bg-gray-700 transition-colors duration-300">
                 <td className="border-2 border-gray-800 dark:border-gray-600 p-2 font-bold text-gray-900 dark:text-white" colSpan={evaluationData.evaluations.length + 1}>
                   {t('step7.infoNiveau')}
                 </td>
@@ -216,7 +251,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.niveauInitial}
                       onChange={(e) => updateEvaluation(idx, 'niveauInitial', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -229,7 +267,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.connaissancesTheoriques}
                       onChange={(e) => updateEvaluation(idx, 'connaissancesTheoriques', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -242,7 +283,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.competencesPratiques}
                       onChange={(e) => updateEvaluation(idx, 'competencesPratiques', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -252,7 +296,7 @@ export default function Step7Evaluation() {
               </tr>
 
               {/* Section 2: Participation et engagement */}
-              <tr className="bg-gray-300 dark:bg-gray-700">
+              <tr className="bg-gray-300 dark:bg-gray-700 transition-colors duration-300">
                 <td className="border-2 border-gray-800 dark:border-gray-600 p-2 font-bold text-gray-900 dark:text-white" colSpan={evaluationData.evaluations.length + 1}>
                   {t('step7.participation')}
                 </td>
@@ -262,7 +306,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.niveauParticipation}
                       onChange={(e) => updateEvaluation(idx, 'niveauParticipation', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -275,7 +322,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.contributionDiscussions}
                       onChange={(e) => updateEvaluation(idx, 'contributionDiscussions', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -285,7 +335,7 @@ export default function Step7Evaluation() {
               </tr>
 
               {/* Section 3: Compréhension du contenu */}
-              <tr className="bg-gray-300 dark:bg-gray-700">
+              <tr className="bg-gray-300 dark:bg-gray-700 transition-colors duration-300">
                 <td className="border-2 border-gray-800 dark:border-gray-600 p-2 font-bold text-gray-900 dark:text-white" colSpan={evaluationData.evaluations.length + 1}>
                   {t('step7.comprehension')}
                 </td>
@@ -295,7 +345,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.bonneComprehension}
                       onChange={(e) => updateEvaluation(idx, 'bonneComprehension', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -308,7 +361,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.capaciteAppliquer}
                       onChange={(e) => updateEvaluation(idx, 'capaciteAppliquer', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -321,7 +377,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.niveauCompetences}
                       onChange={(e) => updateEvaluation(idx, 'niveauCompetences', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -334,7 +393,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.attitudeGenerale}
                       onChange={(e) => updateEvaluation(idx, 'attitudeGenerale', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -347,7 +409,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.participantPonctuel}
                       onChange={(e) => updateEvaluation(idx, 'participantPonctuel', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -360,7 +425,10 @@ export default function Step7Evaluation() {
                 {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
                     <input
-                      type="text"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.5"
                       value={evaluation.amelioration}
                       onChange={(e) => updateEvaluation(idx, 'amelioration', e.target.value)}
                       className="w-full px-2 py-1 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded text-center transition-colors duration-300"
@@ -369,17 +437,14 @@ export default function Step7Evaluation() {
                 ))}
               </tr>
 
-              {/* Note Général Row */}
-              <tr className="bg-green-100 dark:bg-green-900">
+              {/* Note Général row - AUTO-CALCULATED, READ-ONLY */}
+              <tr className="bg-green-100 dark:bg-green-900 transition-colors duration-300">
                 <td className="border-2 border-gray-800 dark:border-gray-600 p-2 font-bold text-gray-900 dark:text-white">{t('step7.noteGeneral')}</td>
-                {evaluationData.noteGeneral.slice(0, evaluationData.evaluations.length).map((note, idx) => (
+                {evaluationData.evaluations.map((evaluation, idx) => (
                   <td key={idx} className="border-2 border-gray-800 dark:border-gray-600 p-1">
-                    <input
-                      type="text"
-                      value={note}
-                      onChange={(e) => updateNoteGeneral(idx, e.target.value)}
-                      className="w-full px-2 py-1 border-2 border-green-400 dark:border-green-600 rounded text-center font-bold bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"
-                    />
+                    <div className="w-full px-2 py-1 border-2 border-green-400 dark:border-green-600 rounded text-center font-bold bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300">
+                      {calculateNoteGeneral(evaluation)}
+                    </div>
                   </td>
                 ))}
               </tr>
@@ -399,7 +464,7 @@ export default function Step7Evaluation() {
         </div>
 
         {/* Signatures */}
-        <div className="grid grid-cols-2 gap-8 border-t-2 pt-6">
+        <div className="grid grid-cols-2 gap-8 border-t-2 border-gray-200 dark:border-gray-700 pt-6 transition-colors duration-300">
           <div>
             <label className="font-bold mb-2 block text-gray-900 dark:text-white">{t('step7.dateLe')}</label>
             <input
@@ -409,11 +474,11 @@ export default function Step7Evaluation() {
               className="w-full px-4 py-2 border-2 border-gray-300 dark:border-gray-600 rounded-lg mb-4 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-300"
             />
             <p className="font-bold mb-3 text-gray-900 dark:text-white">{t('step7.signatureFormateur')}</p>
-            <div className="h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg"></div>
+            <div className="h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg transition-colors duration-300"></div>
           </div>
           <div>
             <p className="font-bold mb-3 mt-10 text-gray-900 dark:text-white">{t('step7.signatureABBK')}</p>
-            <div className="h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg"></div>
+            <div className="h-24 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-lg transition-colors duration-300"></div>
           </div>
         </div>
       </div>
